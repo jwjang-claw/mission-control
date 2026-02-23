@@ -188,7 +188,10 @@ export const TaskModal = ({ isOpen, onClose }: TaskModalProps) => {
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !formData.title.trim()}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !formData.title.trim()}
+            >
               {isSubmitting ? "Creating..." : "Create Task"}
             </Button>
           </div>

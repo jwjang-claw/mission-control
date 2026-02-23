@@ -10,11 +10,7 @@ interface MainLayoutProps {
   subtitle?: string;
 }
 
-export const MainLayout = ({
-  children,
-  title,
-  subtitle,
-}: MainLayoutProps) => {
+export const MainLayout = ({ children, title, subtitle }: MainLayoutProps) => {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />

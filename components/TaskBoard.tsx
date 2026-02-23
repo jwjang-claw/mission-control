@@ -25,10 +25,30 @@ const STATUS_OPTIONS = [
 ];
 
 const COLUMNS = [
-  { id: "pending", title: "Pending", color: "var(--color-backlog)", bgColor: "var(--color-backlog-bg)" },
-  { id: "in-progress", title: "In Progress", color: "var(--color-in-progress)", bgColor: "var(--color-in-progress-bg)" },
-  { id: "blocked", title: "Blocked", color: "var(--color-error)", bgColor: "var(--color-error-bg)" },
-  { id: "done", title: "Done", color: "var(--color-done)", bgColor: "var(--color-done-bg)" },
+  {
+    id: "pending",
+    title: "Pending",
+    color: "var(--color-backlog)",
+    bgColor: "var(--color-backlog-bg)",
+  },
+  {
+    id: "in-progress",
+    title: "In Progress",
+    color: "var(--color-in-progress)",
+    bgColor: "var(--color-in-progress-bg)",
+  },
+  {
+    id: "blocked",
+    title: "Blocked",
+    color: "var(--color-error)",
+    bgColor: "var(--color-error-bg)",
+  },
+  {
+    id: "done",
+    title: "Done",
+    color: "var(--color-done)",
+    bgColor: "var(--color-done-bg)",
+  },
 ] as const;
 
 export default function TaskBoard() {
@@ -93,7 +113,10 @@ export default function TaskBoard() {
           </div>
           <div className="w-px h-6 bg-[var(--color-border-subtle)]" />
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-semibold" style={{ color: "var(--color-in-progress)" }}>
+            <span
+              className="text-2xl font-semibold"
+              style={{ color: "var(--color-in-progress)" }}
+            >
               {stats.inProgress}
             </span>
             <span className="text-sm text-[var(--color-text-secondary)]">
@@ -102,7 +125,10 @@ export default function TaskBoard() {
           </div>
           <div className="w-px h-6 bg-[var(--color-border-subtle)]" />
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-semibold" style={{ color: "var(--color-done)" }}>
+            <span
+              className="text-2xl font-semibold"
+              style={{ color: "var(--color-done)" }}
+            >
               {stats.done}
             </span>
             <span className="text-sm text-[var(--color-text-secondary)]">
@@ -113,7 +139,10 @@ export default function TaskBoard() {
       </div>
 
       {/* New Task Form - Compact Notion style */}
-      <form onSubmit={handleSubmit} className="mb-6 p-6 bg-white rounded-lg border border-[var(--color-border-subtle)] shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="mb-6 p-6 bg-white rounded-lg border border-[var(--color-border-subtle)] shadow-sm"
+      >
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[240px]">
             <input
@@ -242,16 +271,46 @@ function TaskCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const assigneeColors: Record<string, { bg: string; text: string; initial: string }> = {
-    Kuro: { bg: "var(--color-kuro-bg)", text: "var(--color-text-primary)", initial: "K" },
-    snail: { bg: "var(--color-snail-bg)", text: "var(--color-text-primary)", initial: "S" },
+  const assigneeColors: Record<
+    string,
+    { bg: string; text: string; initial: string }
+  > = {
+    Kuro: {
+      bg: "var(--color-kuro-bg)",
+      text: "var(--color-text-primary)",
+      initial: "K",
+    },
+    snail: {
+      bg: "var(--color-snail-bg)",
+      text: "var(--color-text-primary)",
+      initial: "S",
+    },
   };
 
-  const statusStyles: Record<string, { bg: string; color: string; label: string }> = {
-    pending: { bg: "var(--color-backlog-bg)", color: "var(--color-backlog)", label: "Pending" },
-    "in-progress": { bg: "var(--color-in-progress-bg)", color: "var(--color-in-progress)", label: "In Progress" },
-    done: { bg: "var(--color-done-bg)", color: "var(--color-done)", label: "Done" },
-    blocked: { bg: "var(--color-error-bg)", color: "var(--color-error)", label: "Blocked" },
+  const statusStyles: Record<
+    string,
+    { bg: string; color: string; label: string }
+  > = {
+    pending: {
+      bg: "var(--color-backlog-bg)",
+      color: "var(--color-backlog)",
+      label: "Pending",
+    },
+    "in-progress": {
+      bg: "var(--color-in-progress-bg)",
+      color: "var(--color-in-progress)",
+      label: "In Progress",
+    },
+    done: {
+      bg: "var(--color-done-bg)",
+      color: "var(--color-done)",
+      label: "Done",
+    },
+    blocked: {
+      bg: "var(--color-error-bg)",
+      color: "var(--color-error)",
+      label: "Blocked",
+    },
   };
 
   const currentStyle = statusStyles[task.status] || statusStyles.pending;
@@ -279,8 +338,19 @@ function TaskCard({
           className="text-[var(--color-text-tertiary)] hover:text-[var(--color-error)] transition-colors p-1 -m-1 opacity-0 group-hover:opacity-100"
           aria-label="Delete task"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M1 1L13 13M1 13L13 1"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
       </div>
@@ -290,16 +360,25 @@ function TaskCard({
         {/* Status Badge */}
         <span
           className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-          style={{ backgroundColor: currentStyle.bg, color: currentStyle.color }}
+          style={{
+            backgroundColor: currentStyle.bg,
+            color: currentStyle.color,
+          }}
         >
-          <span className="w-1 h-1 rounded-full mr-1.5" style={{ backgroundColor: currentStyle.color }} />
+          <span
+            className="w-1 h-1 rounded-full mr-1.5"
+            style={{ backgroundColor: currentStyle.color }}
+          />
           {currentStyle.label}
         </span>
 
         {/* Assignee Avatar - Notion style */}
         <span
           className="inline-flex items-center justify-center w-5 h-5 rounded text-xs font-medium"
-          style={{ backgroundColor: assigneeStyle.bg, color: assigneeStyle.text }}
+          style={{
+            backgroundColor: assigneeStyle.bg,
+            color: assigneeStyle.text,
+          }}
         >
           {assigneeStyle.initial}
         </span>
@@ -308,7 +387,9 @@ function TaskCard({
       {/* Quick Status Change - Expandable */}
       {isExpanded && (
         <div className="pt-3 mt-3 border-t border-[var(--color-border-subtle)]">
-          <p className="text-xs text-[var(--color-text-tertiary)] mb-2">Move to:</p>
+          <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
+            Move to:
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {STATUS_OPTIONS.map((opt) => {
               const optStyle = statusStyles[opt.value] || statusStyles.pending;
@@ -325,8 +406,12 @@ function TaskCard({
                       : "hover:opacity-80"
                   }`}
                   style={{
-                    backgroundColor: task.status === opt.value ? undefined : optStyle.bg,
-                    color: task.status === opt.value ? "var(--color-in-progress)" : optStyle.color,
+                    backgroundColor:
+                      task.status === opt.value ? undefined : optStyle.bg,
+                    color:
+                      task.status === opt.value
+                        ? "var(--color-in-progress)"
+                        : optStyle.color,
                   }}
                 >
                   {opt.label}

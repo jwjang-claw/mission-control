@@ -8,7 +8,10 @@ export const seed = mutation({
     // Check if data already exists
     const existingTasks = await ctx.db.query("tasks").collect();
     if (existingTasks.length > 0) {
-      return { message: "Database already seeded", count: existingTasks.length };
+      return {
+        message: "Database already seeded",
+        count: existingTasks.length,
+      };
     }
 
     const now = Date.now();
@@ -124,7 +127,8 @@ export const seed = mutation({
       // Done tasks
       {
         title: "Setup CI/CD pipeline",
-        description: "Configure GitHub Actions for automated testing and deployment",
+        description:
+          "Configure GitHub Actions for automated testing and deployment",
         assignee: "Kuro",
         status: "done",
         priority: "high",

@@ -13,7 +13,8 @@
     "test:run": "vitest run",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "qa-check": "pnpm run type-check && pnpm run lint && pnpm run format:check && pnpm run test:run"
   },
   "dependencies": {
     "convex": "^1.32.0",

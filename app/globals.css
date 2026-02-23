@@ -2,56 +2,59 @@
 
 :root {
   /* Notion-inspired Color Palette */
-  --color-bg-primary: #FFFFFF;
-  --color-bg-secondary: #F7F7F5;
-  --color-bg-hover: #EFEFEF;
-  --color-text-primary: #37352F;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f7f5;
+  --color-bg-hover: #efefef;
+  --color-text-primary: #37352f;
   --color-text-secondary: #787774;
-  --color-text-tertiary: #9B9A97;
-  --color-border-subtle: #E9E9E7;
-  --color-border-default: #E6E6E6;
+  --color-text-tertiary: #9b9a97;
+  --color-border-subtle: #e9e9e7;
+  --color-border-default: #e6e6e6;
 
   /* Status Colors */
-  --color-recurring: #9B9A97;
-  --color-recurring-bg: #F7F7F5;
-  --color-backlog: #D3D1CB;
-  --color-backlog-bg: #F7F7F5;
-  --color-in-progress: #0F7B6C;
-  --color-in-progress-bg: #DDF5F2;
-  --color-review: #D9730D;
-  --color-review-bg: #FDEDE4;
-  --color-done: #0F7B6C;
-  --color-done-bg: #DDF5F2;
+  --color-recurring: #9b9a97;
+  --color-recurring-bg: #f7f7f5;
+  --color-backlog: #d3d1cb;
+  --color-backlog-bg: #f7f7f5;
+  --color-in-progress: #0f7b6c;
+  --color-in-progress-bg: #ddf5f2;
+  --color-review: #d9730d;
+  --color-review-bg: #fdede4;
+  --color-done: #0f7b6c;
+  --color-done-bg: #ddf5f2;
 
   /* Assignee Colors */
-  --color-kuro: #E3B9D6;
-  --color-kuro-bg: #FCF0F7;
-  --color-snail: #A5D8FF;
-  --color-snail-bg: #F0F7FF;
+  --color-kuro: #e3b9d6;
+  --color-kuro-bg: #fcf0f7;
+  --color-snail: #a5d8ff;
+  --color-snail-bg: #f0f7ff;
 
   /* Priority Colors */
-  --color-priority-high: #E03E3E;
-  --color-priority-high-bg: #FEECEC;
-  --color-priority-medium: #D9730D;
-  --color-priority-medium-bg: #FDEDE4;
-  --color-priority-low: #9B9A97;
-  --color-priority-low-bg: #F7F7F5;
+  --color-priority-high: #e03e3e;
+  --color-priority-high-bg: #feecec;
+  --color-priority-medium: #d9730d;
+  --color-priority-medium-bg: #fdede4;
+  --color-priority-low: #9b9a97;
+  --color-priority-low-bg: #f7f7f5;
 
   /* Semantic Colors */
-  --color-success: #0F7B6C;
-  --color-success-bg: #DDF5F2;
-  --color-warning: #D9730D;
-  --color-warning-bg: #FDEDE4;
-  --color-error: #E03E3E;
-  --color-error-bg: #FEECEC;
-  --color-info: #0F7B6C;
-  --color-info-bg: #DDF5F2;
+  --color-success: #0f7b6c;
+  --color-success-bg: #ddf5f2;
+  --color-warning: #d9730d;
+  --color-warning-bg: #fdede4;
+  --color-error: #e03e3e;
+  --color-error-bg: #feecec;
+  --color-info: #0f7b6c;
+  --color-info-bg: #ddf5f2;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 @theme inline {
@@ -84,15 +87,8 @@ body {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Helvetica,
-    "Apple Color Emoji",
-    Arial,
-    sans-serif,
-    "Segoe UI Emoji",
-    "Segoe UI Symbol";
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -120,7 +116,12 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -171,7 +172,9 @@ button:focus-visible {
 }
 
 /* Inputs */
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: inherit;
   font-size: 14px;
   color: var(--color-text-primary);
@@ -179,16 +182,21 @@ input, textarea, select {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   padding: 8px 12px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--color-in-progress);
   box-shadow: 0 0 0 3px rgba(15, 123, 108, 0.1);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--color-text-tertiary);
 }
 

@@ -110,15 +110,15 @@ export const TaskCard = ({
               priority === "high"
                 ? "var(--color-priority-high)"
                 : priority === "medium"
-                ? "var(--color-priority-medium)"
-                : "var(--color-priority-low)"
+                  ? "var(--color-priority-medium)"
+                  : "var(--color-priority-low)"
             }
             bgColor={
               priority === "high"
                 ? "var(--color-priority-high-bg)"
                 : priority === "medium"
-                ? "var(--color-priority-medium-bg)"
-                : "var(--color-priority-low-bg)"
+                  ? "var(--color-priority-medium-bg)"
+                  : "var(--color-priority-low-bg)"
             }
           >
             {priority}
