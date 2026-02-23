@@ -55,13 +55,16 @@ describe("TaskBoard", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the task board with header", () => {
+  it("renders the task board with stats bar", () => {
     mockUseQuery.mockReturnValue([]);
     mockUseMutation.mockReturnValue(vi.fn().mockResolvedValue(undefined));
 
     render(<TaskBoard />);
 
-    expect(screen.getByText("Task Board")).toBeInTheDocument();
+    // Check stats bar is rendered (instead of "Task Board" header)
+    expect(screen.getByText("tasks")).toBeInTheDocument();
+    expect(screen.getByText("in progress")).toBeInTheDocument();
+    expect(screen.getByText("completed")).toBeInTheDocument();
   });
 
   it("renders empty state when no tasks", () => {
@@ -106,11 +109,14 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const titleInput = screen.getByPlaceholderText("New task...");
-    const addButton = screen.getByRole("button", { name: /add/i });
+    // Click the first "New" button (in Pending column)
+    const newButtons = screen.getAllByText("New");
+    await userEvent.click(newButtons[0]);
 
+    // Find the input with new placeholder
+    const titleInput = screen.getByPlaceholderText("What needs to be done?");
     await userEvent.type(titleInput, "New task from test");
-    await userEvent.click(addButton);
+    await userEvent.keyboard("{Enter}");
 
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith({
@@ -132,13 +138,15 @@ describe("TaskBoard", () => {
     const taskCard = screen.getByText("Fix navigation bug").closest("div");
     await userEvent.click(taskCard!);
 
-    // Wait for expanded view and click on a status button
+    // Wait for expanded view and check for "Move to" text (no colon)
     await waitFor(() => {
-      expect(screen.getByText("Move to:")).toBeInTheDocument();
+      expect(screen.getByText("Move to")).toBeInTheDocument();
     });
 
-    // Click "Done" button
-    const doneButton = screen.getByRole("button", { name: "Done" });
+    // Click "Done" button - find it within the menu (absolute positioned dropdown)
+    // The menu is the only container with "Move to" text
+    const menu = screen.getByText("Move to").closest("div");
+    const doneButton = within(menu!).getByRole("button", { name: /Done/ });
     await userEvent.click(doneButton);
 
     await waitFor(() => {
@@ -156,13 +164,15 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    // Hover over task card to reveal delete button
+    // Find task card
     const taskCard = screen.getByText("Fix navigation bug").closest("div");
 
-    // Delete button has aria-label="Delete task"
-    const deleteButton = within(taskCard!).getByLabelText("Delete task");
+    // Find delete button within the card (trash icon button without aria-label)
+    // It's in the hover area, so we query directly
+    const deleteButton = within(taskCard!).getByRole("button", {
+      name: "",
+    });
 
-    // We can directly click it
     await userEvent.click(deleteButton);
 
     await waitFor(() => {
@@ -177,9 +187,14 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const addButton = screen.getByRole("button", { name: /add/i });
-    await userEvent.click(addButton);
+    // Click the first "New" button
+    const newButtons = screen.getAllByText("New");
+    await userEvent.click(newButtons[0]);
 
+    // Click outside or press Enter without typing
+    await userEvent.keyboard("{Enter}");
+
+    // Should not create task with empty title
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
