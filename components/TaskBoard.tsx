@@ -362,29 +362,45 @@ function TaskCard({
       </div>
 
       {showMenu && (
-        <div className="absolute top-[calc(100%+6px)] left-0 z-20 w-44 bg-white rounded-xl border border-[var(--color-border-default)] shadow-[0_8px_24px_rgba(0,0,0,0.12)] p-2 animate-scale-in">
-          <p className="px-2.5 py-2 text-[10px] font-bold text-[var(--color-text-tertiary)] uppercase tracking-widest">
-            Move to
-          </p>
-          {COLUMNS.map((col) => (
-            <button
-              key={col.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange(task._id, col.id);
-                setShowMenu(false);
-              }}
-              className={`w-full text-left px-2.5 py-2.5 text-[13px] rounded-lg transition-colors hover:bg-[var(--color-bg-hover)] ${task.status === col.id ? "font-semibold text-[var(--color-in-progress)]" : "text-[var(--color-text-secondary)]"}`}
-            >
-              <span className="flex items-center gap-2.5">
-                <div
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: col.color }}
-                />
-                {col.title}
+        <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] space-y-3">
+          {/* 전략 메모 */}
+          {task.strategyNote && (
+            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
+              {task.strategyNote}
+            </p>
+          )}
+
+          {/* 메타 정보 */}
+          <div className="flex flex-col gap-1.5">
+            {task.projectId && (
+              <div className="flex items-center gap-2 text-[12px]">
+                <span className="text-[var(--color-text-tertiary)] w-16">
+                  Project
+                </span>
+                <span className="font-medium text-[var(--color-text-primary)] capitalize">
+                  {task.projectId}
+                </span>
+              </div>
+            )}
+            {task.milestone && (
+              <div className="flex items-center gap-2 text-[12px]">
+                <span className="text-[var(--color-text-tertiary)] w-16">
+                  Milestone
+                </span>
+                <span className="font-medium text-[var(--color-in-progress)]">
+                  {task.milestone}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-[12px]">
+              <span className="text-[var(--color-text-tertiary)] w-16">
+                Assignee
               </span>
-            </button>
-          ))}
+              <span className="font-medium text-[var(--color-text-primary)]">
+                {task.assignee}
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </div>

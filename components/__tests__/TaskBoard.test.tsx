@@ -127,10 +127,11 @@ describe("TaskBoard", () => {
     });
   });
 
-  it("changes task status when expanded and status button clicked", async () => {
-    const mockUpdate = vi.fn().mockResolvedValue(undefined);
-    mockUseQuery.mockReturnValue([mockTasks[0]]);
-    mockUseMutation.mockReturnValue(mockUpdate);
+  it("shows card detail when clicked", async () => {
+    mockUseQuery.mockReturnValue([
+      { ...mockTasks[0], projectId: "indieloca", strategyNote: "Core feature" },
+    ]);
+    mockUseMutation.mockReturnValue(vi.fn().mockResolvedValue(undefined));
 
     render(<TaskBoard />);
 
@@ -138,22 +139,10 @@ describe("TaskBoard", () => {
     const taskCard = screen.getByText("Fix navigation bug").closest("div");
     await userEvent.click(taskCard!);
 
-    // Wait for expanded view and check for "Move to" text (no colon)
+    // Wait for expanded detail view
     await waitFor(() => {
-      expect(screen.getByText("Move to")).toBeInTheDocument();
-    });
-
-    // Click "Done" button - find it within the menu (absolute positioned dropdown)
-    // The menu is the only container with "Move to" text
-    const menu = screen.getByText("Move to").closest("div");
-    const doneButton = within(menu!).getByRole("button", { name: /Done/ });
-    await userEvent.click(doneButton);
-
-    await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledWith({
-        id: "1",
-        status: "done",
-      });
+      expect(screen.getByText("Assignee")).toBeInTheDocument();
+      expect(screen.getByText("Core feature")).toBeInTheDocument();
     });
   });
 
