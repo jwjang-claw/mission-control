@@ -11,7 +11,18 @@ type Task = {
   assignee: string;
   status: string;
   updatedAt: number;
+  // Task Manager 연동 필드
+  ticketId?: string;
+  projectId?: string;
+  milestone?: string;
+  strategyNote?: string;
 };
+
+const PROJECTS = [
+  { id: "all", label: "All Projects" },
+  { id: "indieloca", label: "IndieLoca" },
+  { id: "metta-sutta", label: "Metta Sutta" },
+] as const;
 
 const COLUMNS = [
   {
@@ -46,6 +57,14 @@ export default function TaskBoard() {
   const updateTask = useMutation(api.tasks.update);
   const deleteTask = useMutation(api.tasks.remove);
 
+  const [selectedProject, setSelectedProject] = useState<string>("all");
+
+  // 프로젝트 필터링
+  const filteredTasks =
+    selectedProject === "all"
+      ? tasks
+      : tasks.filter((t) => t.projectId === selectedProject);
+
   const handleStatusChange = async (taskId: Id<"tasks">, newStatus: string) => {
     await updateTask({ id: taskId, status: newStatus });
   };
@@ -63,9 +82,9 @@ export default function TaskBoard() {
   };
 
   const stats = {
-    total: tasks.length,
-    inProgress: tasks.filter((t) => t.status === "in-progress").length,
-    done: tasks.filter((t) => t.status === "done").length,
+    total: filteredTasks.length,
+    inProgress: filteredTasks.filter((t) => t.status === "in-progress").length,
+    done: filteredTasks.filter((t) => t.status === "done").length,
   };
 
   return (
@@ -92,12 +111,27 @@ export default function TaskBoard() {
           </span>
           <span className="text-[13px]">completed</span>
         </div>
+
+        {/* 프로젝트 필터 */}
+        <div className="ml-auto">
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="text-[12px] px-3 py-1.5 rounded-lg border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-in-progress)] cursor-pointer"
+          >
+            {PROJECTS.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Board Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
         {COLUMNS.map((col) => {
-          const colTasks = tasks.filter((t) => t.status === col.id);
+          const colTasks = filteredTasks.filter((t) => t.status === col.id);
           return (
             <Column
               key={col.id}
@@ -265,6 +299,22 @@ function TaskCard({
       onClick={() => setShowMenu(!showMenu)}
     >
       <div className="flex flex-col gap-4">
+        {/* 티켓 ID와 마일스톤 */}
+        {(task.ticketId || task.milestone) && (
+          <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-tertiary)]">
+            {task.ticketId && (
+              <span className="px-2 py-0.5 rounded bg-[var(--color-bg-secondary)] font-mono font-semibold">
+                {task.ticketId}
+              </span>
+            )}
+            {task.milestone && (
+              <span className="text-[var(--color-in-progress)] font-medium">
+                {task.milestone}
+              </span>
+            )}
+          </div>
+        )}
+
         <h4 className="text-[14px] font-medium text-[var(--color-text-primary)] leading-[1.6] line-clamp-3">
           {task.title}
         </h4>
