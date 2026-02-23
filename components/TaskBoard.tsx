@@ -2,10 +2,11 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { FormEvent, useState } from "react";
 
 type Task = {
-  _id: string;
+  _id: Id<"tasks">;
   title: string;
   assignee: string;
   status: string;
@@ -39,11 +40,11 @@ export default function TaskBoard() {
     setNewTaskStatus("pending");
   };
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
+  const handleStatusChange = async (taskId: Id<"tasks">, newStatus: string) => {
     await updateTask({ id: taskId, status: newStatus });
   };
 
-  const handleDelete = async (taskId: string) => {
+  const handleDelete = async (taskId: Id<"tasks">) => {
     if (confirm("Abandon this quest?")) {
       await deleteTask({ id: taskId });
     }
@@ -299,8 +300,8 @@ function QuestCard({
   delay = 0,
 }: {
   task: Task;
-  onStatusChange: (id: string, status: string) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onStatusChange: (id: Id<"tasks">, status: string) => Promise<void>;
+  onDelete: (id: Id<"tasks">) => Promise<void>;
   delay?: number;
 }) {
   const [isDeleting, setIsDeleting] = useState(false);
