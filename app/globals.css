@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+:root {
+  --bg-parchment: #2a1810;
+  --bg-wood: #1a0f0a;
+  --bg-parchment-light: #3d2418;
+  --accent-gold: #d4a574;
+  --accent-bronze: #a67c52;
+  --accent-parchment: #c9a959;
+  --accent-red: #8b2942;
+  --accent-green: #2d5016;
+  --accent-blue: #1e3a5f;
+  --text-primary: #f4e4c1;
+  --text-secondary: #c9a959;
+  --text-muted: #8b6914;
+  --glow-gold: rgba(212, 165, 116, 0.4);
+  --glow-fire: rgba(212, 165, 116, 0.3);
+}
+
+@theme inline {
+  --color-bg-parchment: var(--bg-parchment);
+  --color-bg-wood: var(--bg-wood);
+  --color-bg-parchment-light: var(--bg-parchment-light);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-bronze: var(--accent-bronze);
+  --color-accent-parchment: var(--accent-parchment);
+  --color-accent-red: var(--accent-red);
+  --color-accent-green: var(--accent-green);
+  --color-accent-blue: var(--accent-blue);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-glow-gold: var(--glow-gold);
+  --color-glow-fire: var(--glow-fire);
+  --font-cinzel: var(--font-cinzel);
+  --font-crimson: var(--font-crimson);
+  
+  --font-sans: var(--font-cinzel);
+  --font-serif: var(--font-crimson);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-wood);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Medieval Tavern Background */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  41% { opacity: 1; }
+  42% { opacity: 0.8; }
+  43% { opacity: 1; }
+  45% { opacity: 0.9; }
+  46% { opacity: 1; }
+}
+
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(-200px) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes ember-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(20px);
+    opacity: 0;
+  }
+}
+
+.tavern-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 50% 100%, rgba(212, 165, 116, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 20%, rgba(139, 105, 20, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 80%, rgba(166, 124, 82, 0.1) 0%, transparent 40%),
+    var(--bg-wood);
+  z-index: -2;
+}
+
+.stone-wall {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 80px,
+      rgba(139, 105, 20, 0.05) 80px,
+      rgba(139, 105, 20, 0.05) 82px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(139, 105, 20, 0.05) 40px,
+      rgba(139, 105, 20, 0.05) 42px
+    );
+  z-index: -1;
+}
+
+/* Torch flicker effect */
+.torch-glow {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 165, 116, 0.3) 0%, transparent 70%);
+  filter: blur(30px);
+  animation: flicker 0.5s infinite;
+  z-index: -1;
+}
+
+.torch-glow.left {
+  top: 10%;
+  left: -100px;
+}
+
+.torch-glow.right {
+  top: 10%;
+  right: -100px;
+}
+
+/* Parchment texture overlay */
+.parchment-texture {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
+/* Medieval frame/card */
+.parchment-card {
+  background: linear-gradient(135deg, var(--bg-parchment-light) 0%, var(--bg-parchment) 100%);
+  border: 3px solid var(--accent-bronze);
+  box-shadow: 
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(212, 165, 116, 0.1);
+  position: relative;
+}
+
+.parchment-card::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--accent-gold);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Wax seal effect */
+.wax-seal {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent-red), #5c1a2b);
+  box-shadow: 
+    inset -2px -2px 6px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Quill and ink effects */
+.ink-text {
+  color: var(--text-primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Medieval border decorations */
+.celtic-border {
+  position: relative;
+}
+
+.celtic-border::after {
+  content: '⚜ ⚜ ⚜';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--accent-gold);
+  letter-spacing: 4px;
+  opacity: 0.6;
+}
+
+/* Animations */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes quill-write {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.animate-slide-up {
+  animation: slide-in-up 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-quill {
+  animation: quill-write 2s ease-in-out infinite;
+}
+
+/* Staggered delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Color utilities */
+.text-gold { color: var(--accent-gold); }
+.text-bronze { color: var(--accent-bronze); }
+.text-parchment { color: var(--text-primary); }
+.text-primary { color: var(--text-primary); }
+.text-wood { color: var(--bg-wood); }
+.bg-gold { background-color: var(--accent-gold); }
+.bg-bronze { background-color: var(--accent-bronze); }
+.bg-wood { background-color: var(--bg-wood); }
+.bg-parchment { background-color: var(--bg-parchment); }
+.bg-parchment-light { background-color: var(--bg-parchment-light); }
+.border-gold { border-color: var(--accent-gold); }
+.border-bronze { border-color: var(--accent-bronze); }
+.font-cinzel { font-family: var(--font-cinzel); }
+.font-crimson { font-family: var(--font-crimson); }

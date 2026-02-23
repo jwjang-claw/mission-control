@@ -1,0 +1,418 @@
+"use client";
+
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { FormEvent, useState } from "react";
+
+type Task = {
+  _id: Id<"tasks">;
+  title: string;
+  assignee: string;
+  status: string;
+  updatedAt: number;
+};
+
+const ASSIGNEES = ["Kuro 🐱", "snail 👤"] as const;
+
+export default function TaskBoard() {
+  const tasks = (useQuery(api.tasks.list) as Task[] | undefined) || [];
+  const createTask = useMutation(api.tasks.create);
+  const updateTask = useMutation(api.tasks.update);
+  const deleteTask = useMutation(api.tasks.remove);
+
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("Kuro 🐱");
+  const [newTaskStatus, setNewTaskStatus] = useState("pending");
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+
+    await createTask({
+      title: newTaskTitle,
+      assignee: newTaskAssignee,
+      status: newTaskStatus,
+    });
+
+    setNewTaskTitle("");
+    setNewTaskAssignee("Kuro 🐱");
+    setNewTaskStatus("pending");
+  };
+
+  const handleStatusChange = async (taskId: Id<"tasks">, newStatus: string) => {
+    await updateTask({ id: taskId, status: newStatus });
+  };
+
+  const handleDelete = async (taskId: Id<"tasks">) => {
+    await deleteTask({ id: taskId });
+  };
+
+  const inProgressTasks = tasks.filter((t: Task) => t.status === "in-progress");
+  const doneTasks = tasks.filter((t: Task) => t.status === "done");
+  const pendingBlockedTasks = tasks.filter(
+    (t: Task) => t.status === "pending" || t.status === "blocked"
+  );
+
+  return (
+    <div className="min-h-screen p-6 md:p-8 relative overflow-hidden">
+      {/* Decorative orbital rings */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-cyan-500/10 rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-blue-500/10 rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-purple-500/10 rounded-full pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <header className="mb-12 animate-fade-in">
+          <div className="flex items-center gap-6 mb-4">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center glow-cyan">
+                <span className="text-4xl">🚀</span>
+              </div>
+              <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping" />
+            </div>
+            <div>
+              <h1 className="text-5xl md:text-6xl font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 text-glow-cyan">
+                MISSION CONTROL
+              </h1>
+              <p className="text-cyan-400/80 font-jetbrains text-sm tracking-widest mt-2">
+                ORBITAL COMMAND INTERFACE v2.4.7
+              </p>
+            </div>
+          </div>
+          
+          {/* Status indicators */}
+          <div className="flex items-center gap-6 mt-6 font-jetbrains text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-green-400">SYSTEM ONLINE</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse delay-100" />
+              <span className="text-cyan-400">CONVEX CONNECTED</span>
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-slate-500">TOTAL TASKS:</span>
+              <span className="text-cyan-400 font-bold">{tasks.length}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Add Task Form */}
+        <form onSubmit={handleSubmit} className="mb-12 animate-slide-up delay-100">
+          <div className="glass-card rounded-2xl p-6 holo-border hover:border-cyan-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded bg-cyan-500/20 flex items-center justify-center">
+                <span className="text-cyan-400">⬡</span>
+              </div>
+              <h2 className="text-xl font-orbitron font-semibold text-cyan-400 tracking-wide">
+                INITIATE NEW PROTOCOL
+              </h2>
+            </div>
+            
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px] relative">
+                <input
+                  type="text"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  placeholder="Enter protocol designation..."
+                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-cyan-500/30 text-cyan-100 placeholder-cyan-700 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-jetbrains"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-600 text-xs">
+                  ⌘K
+                </div>
+              </div>
+              
+              <div className="relative">
+                <select
+                  value={newTaskAssignee}
+                  onChange={(e) => setNewTaskAssignee(e.target.value)}
+                  className="px-4 py-3 rounded-xl bg-slate-900/80 border border-blue-500/30 text-blue-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none pr-10 font-jetbrains cursor-pointer"
+                >
+                  {ASSIGNEES.map((assignee) => (
+                    <option key={assignee} value={assignee}>
+                      {assignee}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none">
+                  ▼
+                </div>
+              </div>
+              
+              <div className="relative">
+                <select
+                  value={newTaskStatus}
+                  onChange={(e) => setNewTaskStatus(e.target.value)}
+                  className="px-4 py-3 rounded-xl bg-slate-900/80 border border-purple-500/30 text-purple-100 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none pr-10 font-jetbrains cursor-pointer"
+                >
+                  <option value="pending">⬡ PENDING</option>
+                  <option value="in-progress">◈ IN PROGRESS</option>
+                  <option value="done">✦ DONE</option>
+                  <option value="blocked">⚠ BLOCKED</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none">
+                  ▼
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-orbitron font-semibold rounded-xl transition-all duration-300 glow-cyan hover:scale-105 active:scale-95 flex items-center gap-2"
+              >
+                <span>LAUNCH</span>
+                <span className="text-lg">→</span>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* Task Columns - Diagonal Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* In Progress Column */}
+          <div className="animate-slide-up delay-200">
+            <div className="glass-card rounded-2xl p-5 border border-orange-500/30 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600" />
+              <div className="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="flex items-center gap-3 mb-5 relative z-10">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                  <span className="text-xl">◈</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-orbitron font-bold text-orange-400 tracking-wide">
+                    ACTIVE
+                  </h2>
+                  <p className="text-xs text-orange-500/70 font-jetbrains">IN PROGRESS</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-orange-500/50 flex items-center justify-center bg-orange-500/10">
+                  <span className="text-orange-400 font-orbitron font-bold text-lg">{inProgressTasks.length}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3 relative z-10">
+                {inProgressTasks.map((task: Task, index: number) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                    delay={index}
+                  />
+                ))}
+                {inProgressTasks.length === 0 && (
+                  <EmptyState message="NO ACTIVE PROTOCOLS" emoji="⊘" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Done Column */}
+          <div className="animate-slide-up delay-300">
+            <div className="glass-card rounded-2xl p-5 border border-green-500/30 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-600 via-emerald-500 to-green-600" />
+              <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="flex items-center gap-3 mb-5 relative z-10">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <span className="text-xl">✦</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-orbitron font-bold text-green-400 tracking-wide">
+                    COMPLETE
+                  </h2>
+                  <p className="text-xs text-green-500/70 font-jetbrains">MISSIONS DONE</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-green-500/50 flex items-center justify-center bg-green-500/10">
+                  <span className="text-green-400 font-orbitron font-bold text-lg">{doneTasks.length}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3 relative z-10">
+                {doneTasks.map((task: Task, index: number) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                    delay={index}
+                  />
+                ))}
+                {doneTasks.length === 0 && (
+                  <EmptyState message="NO COMPLETED MISSIONS" emoji="○" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Pending/Blocked Column */}
+          <div className="animate-slide-up delay-400">
+            <div className="glass-card rounded-2xl p-5 border border-blue-500/30 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600" />
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="flex items-center gap-3 mb-5 relative z-10">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <span className="text-xl">⬡</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-orbitron font-bold text-blue-400 tracking-wide">
+                    STANDBY
+                  </h2>
+                  <p className="text-xs text-blue-500/70 font-jetbrains">PENDING / BLOCKED</p>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-blue-500/50 flex items-center justify-center bg-blue-500/10">
+                  <span className="text-blue-400 font-orbitron font-bold text-lg">{pendingBlockedTasks.length}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3 relative z-10">
+                {pendingBlockedTasks.map((task: Task, index: number) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                    delay={index}
+                  />
+                ))}
+                {pendingBlockedTasks.length === 0 && (
+                  <EmptyState message="NO QUEUED PROTOCOLS" emoji="⊖" />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TaskCard({
+  task,
+  onStatusChange,
+  onDelete,
+  delay = 0,
+}: {
+  task: Task;
+  onStatusChange: (id: Id<"tasks">, status: string) => Promise<void>;
+  onDelete: (id: Id<"tasks">) => Promise<void>;
+  delay?: number;
+}) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteClick = async () => {
+    if (confirm("Terminate this protocol?")) {
+      setIsDeleting(true);
+      await onDelete(task._id);
+    }
+  };
+
+  const statusConfig: Record<string, { icon: string; color: string; bg: string; border: string }> = {
+    "in-progress": {
+      icon: "◈",
+      color: "text-orange-400",
+      bg: "bg-orange-500/10",
+      border: "border-orange-500/30",
+    },
+    done: {
+      icon: "✦",
+      color: "text-green-400",
+      bg: "bg-green-500/10",
+      border: "border-green-500/30",
+    },
+    pending: {
+      icon: "⬡",
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/30",
+    },
+    blocked: {
+      icon: "⚠",
+      color: "text-red-400",
+      bg: "bg-red-500/10",
+      border: "border-red-500/30",
+    },
+  };
+
+  const config = statusConfig[task.status] || statusConfig.pending;
+
+  return (
+    <div
+      className={`group relative bg-slate-900/60 backdrop-blur-sm rounded-xl p-4 border ${config.border} hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 animate-slide-up ${isDeleting ? "opacity-50 scale-95" : ""}`}
+      style={{ animationDelay: `${delay * 0.05}s` }}
+    >
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/50 rounded-tl opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/50 rounded-tr opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-cyan-500/50 rounded-bl opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-500/50 rounded-br opacity-0 group-hover:opacity-100 transition-opacity" />
+      
+      {/* Scanline effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1">
+            <h3 className="font-semibold text-slate-100 font-orbitron text-sm tracking-wide">
+              {task.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-2 text-xs font-jetbrains">
+              <span className={`px-2 py-0.5 rounded ${config.bg} ${config.color} border ${config.border}`}>
+                {config.icon} {task.status.toUpperCase()}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={handleDeleteClick}
+            className="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all duration-200 flex items-center justify-center border border-red-500/30 hover:border-red-500/50"
+            aria-label="Delete task"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-500 font-jetbrains">
+            <span className="text-cyan-600">◆</span> {task.assignee}
+          </span>
+          <span className="text-slate-600 font-jetbrains text-[10px]">
+            ID: {task._id.slice(-6)}
+          </span>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {(["in-progress", "done", "pending", "blocked"] as const).map(
+            (status) => {
+              const btnConfig = statusConfig[status];
+              const isActive = task.status === status;
+              return (
+                <button
+                  key={status}
+                  onClick={() => onStatusChange(task._id, status)}
+                  className={`text-[10px] px-2 py-1 rounded-lg font-jetbrains transition-all duration-200 border ${
+                    isActive
+                      ? `${btnConfig.bg} ${btnConfig.color} ${btnConfig.border} shadow-lg`
+                      : "bg-slate-800/50 text-slate-500 border-slate-700/50 hover:border-slate-600 hover:text-slate-400"
+                  }`}
+                >
+                  {btnConfig.icon}
+                </button>
+              );
+            }
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ message, emoji = "⊘" }: { message: string; emoji?: string }) {
+  return (
+    <div className="text-center py-12 text-slate-600 font-jetbrains">
+      <p className="text-5xl mb-3 opacity-50">{emoji}</p>
+      <p className="text-sm tracking-widest opacity-70">{message}</p>
+    </div>
+  );
+}
