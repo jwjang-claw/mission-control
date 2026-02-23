@@ -91,6 +91,11 @@ export const create = mutation({
     status: v.string(),
     priority: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    // Task Manager 연동 필드
+    ticketId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    milestone: v.optional(v.string()),
+    strategyNote: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -101,6 +106,10 @@ export const create = mutation({
       status: args.status,
       priority: args.priority,
       tags: args.tags,
+      ticketId: args.ticketId,
+      projectId: args.projectId,
+      milestone: args.milestone,
+      strategyNote: args.strategyNote,
       createdAt: now,
       updatedAt: now,
     });
@@ -117,6 +126,11 @@ export const update = mutation({
     status: v.optional(v.string()),
     priority: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    // Task Manager 연동 필드
+    ticketId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    milestone: v.optional(v.string()),
+    strategyNote: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -133,5 +147,55 @@ export const remove = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+// Task Manager 연동 쿼리
+
+export const getByProject = query({
+  args: { projectId: v.string() },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+    return tasks.sort((a, b) => b.updatedAt - a.updatedAt);
+  },
+});
+
+export const getByTicket = query({
+  args: { ticketId: v.string() },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_ticket", (q) => q.eq("ticketId", args.ticketId))
+      .collect();
+    return tasks[0] || null; // 티켓 ID는 고유하므로 첫 번째만 반환
+  },
+});
+
+export const listByProjectAndStatus = query({
+  args: {
+    projectId: v.string(),
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let tasks;
+
+    if (args.status) {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_project_and_status", (q) =>
+          q.eq("projectId", args.projectId).eq("status", args.status!)
+        )
+        .collect();
+    } else {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+        .collect();
+    }
+
+    return tasks.sort((a, b) => b.updatedAt - a.updatedAt);
   },
 });
