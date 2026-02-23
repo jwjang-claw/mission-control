@@ -15,6 +15,12 @@ export default defineSchema({
     milestone: v.optional(v.string()), // "MVP" | "v1.0" | etc
     strategyNote: v.optional(v.string()), // 전략 관련 메모
 
+    // Calendar/Scheduled Task 필드
+    scheduledAt: v.optional(v.number()), // 예약 시간 (timestamp)
+    recurrence: v.optional(v.string()), // "daily" | "cron: 0 9 * * *"
+    isRecurring: v.optional(v.boolean()), // 반복 여부
+    eventType: v.optional(v.string()), // "brief" | "reminder" | "cron"
+
     tags: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -25,5 +31,6 @@ export default defineSchema({
     .index("by_ticket", ["ticketId"])
     .index("by_updatedAt", ["updatedAt"])
     .index("by_status_and_assignee", ["status", "assignee"])
-    .index("by_project_and_status", ["projectId", "status"]),
+    .index("by_project_and_status", ["projectId", "status"])
+    .index("by_scheduledAt", ["scheduledAt"]),
 });
