@@ -19,6 +19,7 @@ npx convex dev
 ```
 
 이 명령은 다음을 수행합니다:
+
 - 새 Convex 프로젝트 생성
 - `convex/_generated/` 디렉토리에 타입 정의 생성
 - Convex 개발 서버 시작 (http://127.0.0.1:3210)
@@ -36,11 +37,13 @@ NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
 **중요**: 두 개의 터미널이 필요합니다!
 
 **터미널 1 - Convex 서버:**
+
 ```bash
 npx convex dev
 ```
 
 **터미널 2 - Next.js 개발 서버:**
+
 ```bash
 npm run dev
 ```
@@ -70,9 +73,10 @@ npm start
 
 ## 문제 해결
 
-### "Cannot find module './_generated/server'" 오류
+### "Cannot find module './\_generated/server'" 오류
 
 해결책:
+
 ```bash
 npx convex dev
 ```
@@ -80,6 +84,7 @@ npx convex dev
 ### 타입 오류
 
 해결책:
+
 ```bash
 npx convex dev
 # 타입이 재생성됩니다
@@ -88,6 +93,7 @@ npx convex dev
 ### 환경 변수 오류
 
 `.env.local` 파일이 있는지 확인하세요:
+
 ```bash
 ls -la .env.local
 ```

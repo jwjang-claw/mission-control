@@ -31,21 +31,21 @@ describe("TaskBoard", () => {
     {
       _id: "1",
       title: "Fix navigation bug",
-      assignee: "Kuro 🐱",
+      assignee: "Kuro",
       status: "in-progress",
       updatedAt: 1234567890,
     },
     {
       _id: "2",
       title: "Update documentation",
-      assignee: "snail 👤",
+      assignee: "snail",
       status: "done",
       updatedAt: 1234567891,
     },
     {
       _id: "3",
       title: "Add unit tests",
-      assignee: "Kuro 🐱",
+      assignee: "Kuro",
       status: "pending",
       updatedAt: 1234567892,
     },
@@ -61,8 +61,13 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    expect(screen.getByText("🚀 Mission Control")).toBeInTheDocument();
-    expect(screen.getByText("Real-time Task Board")).toBeInTheDocument();
+    expect(screen.getByText("Quest Board")).toBeInTheDocument();
+    // Use a more flexible matcher for the subtitle with smart quotes
+    expect(
+      screen.getByText((content) =>
+        content.includes("For glory and honor, we undertake these noble quests")
+      )
+    ).toBeInTheDocument();
   });
 
   it("renders empty state when no tasks", () => {
@@ -71,9 +76,9 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    expect(screen.getByText("No tasks in progress")).toBeInTheDocument();
-    expect(screen.getByText("No completed tasks yet")).toBeInTheDocument();
-    expect(screen.getByText("No pending or blocked tasks")).toBeInTheDocument();
+    expect(screen.getByText("No active quests")).toBeInTheDocument();
+    expect(screen.getByText("No completed quests")).toBeInTheDocument();
+    expect(screen.getByText("No available quests")).toBeInTheDocument();
   });
 
   it("renders tasks in correct columns", () => {
@@ -82,17 +87,27 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    // In Progress column
-    const inProgressColumn = screen.getByText("In Progress").closest("div")?.parentElement;
-    expect(within(inProgressColumn!).getByText("Fix navigation bug")).toBeInTheDocument();
+    // Active column (formerly In Progress)
+    const activeColumn = screen.getByText("Quests in Progress").closest("div")
+      ?.parentElement?.parentElement?.parentElement;
+    expect(
+      within(activeColumn!).getByText("Fix navigation bug")
+    ).toBeInTheDocument();
 
-    // Done column
-    const doneColumn = screen.getByText("Done").closest("div")?.parentElement;
-    expect(within(doneColumn!).getByText("Update documentation")).toBeInTheDocument();
+    // Complete column (formerly Done)
+    const completeColumn = screen.getByText("Finished Quests").closest("div")
+      ?.parentElement?.parentElement?.parentElement;
+    expect(
+      within(completeColumn!).getByText("Update documentation")
+    ).toBeInTheDocument();
 
-    // Pending/Blocked column
-    const pendingColumn = screen.getByText("Pending / Blocked").closest("div")?.parentElement;
-    expect(within(pendingColumn!).getByText("Add unit tests")).toBeInTheDocument();
+    // Available column (formerly Pending/Blocked)
+    const availableColumn = screen
+      .getByText("Pending or Blocked")
+      .closest("div")?.parentElement?.parentElement?.parentElement;
+    expect(
+      within(availableColumn!).getByText("Add unit tests")
+    ).toBeInTheDocument();
   });
 
   it("displays correct task counts", () => {
@@ -101,8 +116,12 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const counts = screen.getAllByText(/1/);
-    expect(counts.length).toBeGreaterThanOrEqual(3);
+    // Check that the total quests count is displayed
+    expect(screen.getByText("Total Quests:")).toBeInTheDocument();
+    const totalCountElement = screen
+      .getAllByText(/3/)
+      .find((el) => el.textContent === "3");
+    expect(totalCountElement).toBeInTheDocument();
   });
 
   it("creates a new task when form is submitted", async () => {
@@ -112,8 +131,8 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const titleInput = screen.getByPlaceholderText("Task title...");
-    const addButton = screen.getByRole("button", { name: "Add Task" });
+    const titleInput = screen.getByPlaceholderText("Enter quest name...");
+    const addButton = screen.getByRole("button", { name: /accept quest/i });
 
     await userEvent.type(titleInput, "New task from test");
     await userEvent.click(addButton);
@@ -121,7 +140,7 @@ describe("TaskBoard", () => {
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith({
         title: "New task from test",
-        assignee: "Kuro 🐱",
+        assignee: "Kuro",
         status: "pending",
       });
     });
@@ -134,7 +153,8 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const statusButton = screen.getByRole("button", { name: /✅ done/ });
+    // Click on the done status button (★ icon)
+    const statusButton = screen.getByRole("button", { name: /★/ });
     await userEvent.click(statusButton);
 
     await waitFor(() => {
@@ -155,11 +175,11 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const deleteButton = screen.getByLabelText("Delete task");
+    const deleteButton = screen.getByLabelText("Abandon quest");
     await userEvent.click(deleteButton);
 
     await waitFor(() => {
-      expect(global.confirm).toHaveBeenCalledWith("Are you sure you want to delete this task?");
+      expect(global.confirm).toHaveBeenCalledWith("Abandon this quest?");
       expect(mockDelete).toHaveBeenCalledWith({ id: "1" });
     });
   });
@@ -171,7 +191,7 @@ describe("TaskBoard", () => {
 
     render(<TaskBoard />);
 
-    const addButton = screen.getByRole("button", { name: "Add Task" });
+    const addButton = screen.getByRole("button", { name: /accept quest/i });
     await userEvent.click(addButton);
 
     expect(mockCreate).not.toHaveBeenCalled();
@@ -184,20 +204,46 @@ describe("TaskBoard", () => {
     render(<TaskBoard />);
 
     // Check that tasks are in correct columns
-    const inProgressColumn = screen.getByText("In Progress").closest("div")?.parentElement;
-    const doneColumn = screen.getByText("Done").closest("div")?.parentElement;
-    const pendingColumn = screen.getByText("Pending / Blocked").closest("div")?.parentElement;
+    const activeColumn = screen.getByText("Quests in Progress").closest("div")
+      ?.parentElement?.parentElement?.parentElement;
+    const completeColumn = screen.getByText("Finished Quests").closest("div")
+      ?.parentElement?.parentElement?.parentElement;
+    const availableColumn = screen
+      .getByText("Pending or Blocked")
+      .closest("div")?.parentElement?.parentElement?.parentElement;
 
-    // In progress should only have in-progress tasks
-    expect(within(inProgressColumn!).queryByText("Update documentation")).not.toBeInTheDocument();
-    expect(within(inProgressColumn!).queryByText("Add unit tests")).not.toBeInTheDocument();
+    // Active should only have in-progress tasks
+    expect(
+      within(activeColumn!).queryByText("Update documentation")
+    ).not.toBeInTheDocument();
+    expect(
+      within(activeColumn!).queryByText("Add unit tests")
+    ).not.toBeInTheDocument();
 
-    // Done should only have done tasks
-    expect(within(doneColumn!).queryByText("Fix navigation bug")).not.toBeInTheDocument();
-    expect(within(doneColumn!).queryByText("Add unit tests")).not.toBeInTheDocument();
+    // Complete should only have done tasks
+    expect(
+      within(completeColumn!).queryByText("Fix navigation bug")
+    ).not.toBeInTheDocument();
+    expect(
+      within(completeColumn!).queryByText("Add unit tests")
+    ).not.toBeInTheDocument();
 
-    // Pending should only have pending/blocked tasks
-    expect(within(pendingColumn!).queryByText("Fix navigation bug")).not.toBeInTheDocument();
-    expect(within(pendingColumn!).queryByText("Update documentation")).not.toBeInTheDocument();
+    // Available should only have pending/blocked tasks
+    expect(
+      within(availableColumn!).queryByText("Fix navigation bug")
+    ).not.toBeInTheDocument();
+    expect(
+      within(availableColumn!).queryByText("Update documentation")
+    ).not.toBeInTheDocument();
+  });
+
+  it("displays tavern status indicators", () => {
+    mockUseQuery.mockReturnValue([]);
+    mockUseMutation.mockReturnValue(vi.fn().mockResolvedValue(undefined));
+
+    render(<TaskBoard />);
+
+    expect(screen.getByText("Tavern Open")).toBeInTheDocument();
+    expect(screen.getByText("Quest Givers Ready")).toBeInTheDocument();
   });
 });

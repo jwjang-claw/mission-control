@@ -1,5 +1,5 @@
-import TaskBoard from "@/components/TaskBoard";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <TaskBoard />;
+  redirect("/tasks");
 }

@@ -30,15 +30,18 @@ Real-time task board dashboard built with Next.js 14+, Convex, and Tailwind CSS.
 ### Installation
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Set up Convex:**
+
    ```bash
    npx convex login
    npx convex dev
    ```
+
    This will:
    - Create a new Convex project
    - Generate type definitions in `convex/_generated/`
@@ -46,11 +49,13 @@ Real-time task board dashboard built with Next.js 14+, Convex, and Tailwind CSS.
 
 3. **Configure environment:**
    The `.env.local` file will be automatically created with your Convex URL:
+
    ```
    NEXT_PUBLIC_CONVEX_URL=<your-convex-url>
    ```
 
 4. **Run the development server:**
+
    ```bash
    npm run dev
    ```
