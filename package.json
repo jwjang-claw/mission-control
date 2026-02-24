@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "qa-check": "pnpm run type-check && pnpm run lint && pnpm run format:check && pnpm run test:run"
+    "qa-check": "pnpm run type-check && pnpm run lint && pnpm run format:check && pnpm run test:run",
+    "sync:memories": "npx tsx scripts/sync-memories.ts"
   },
   "dependencies": {
     "@playwright/test": "^1.58.2",
@@ -33,6 +34,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.4",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^28.1.0",

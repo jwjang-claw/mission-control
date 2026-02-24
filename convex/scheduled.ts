@@ -105,6 +105,7 @@ export const upsertCron = mutation({
   args: {
     cronId: v.string(), // OpenClaw cron ID
     name: v.string(),
+    fullTitle: v.optional(v.string()), // 전체 이름 (마우스오버용)
     schedule: v.string(),
     nextRun: v.number(),
     lastRun: v.optional(v.number()),
@@ -123,6 +124,7 @@ export const upsertCron = mutation({
       // 업데이트
       await ctx.db.patch(existing._id, {
         title: args.name,
+        fullTitle: args.fullTitle,
         description: args.schedule,
         scheduledAt: args.nextRun,
         recurrence: args.schedule,
@@ -134,6 +136,7 @@ export const upsertCron = mutation({
       // 새로 생성
       const taskId = await ctx.db.insert("tasks", {
         title: args.name,
+        fullTitle: args.fullTitle,
         description: args.schedule,
         ticketId: `cron:${args.cronId}`,
         scheduledAt: args.nextRun,
