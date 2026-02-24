@@ -56,4 +56,16 @@ export default defineSchema({
     .index("by_status_and_assignee", ["status", "assignee"])
     .index("by_project_and_status", ["projectId", "status"])
     .index("by_scheduledAt", ["scheduledAt"]),
+
+  agents: defineTable({
+    agentId: v.string(), // "kuro", "robo", "scout", "quill"
+    name: v.string(),
+    role: v.string(),
+    status: v.string(), // "active" | "idle" | "offline"
+    lastSeenAt: v.number(), // timestamp
+    currentTask: v.optional(v.string()),
+    sessionKey: v.optional(v.string()),
+  })
+    .index("by_agentId", ["agentId"])
+    .index("by_status", ["status"]),
 });

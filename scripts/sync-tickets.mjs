@@ -17,7 +17,6 @@ const DOING_DIR = `${VAULT_DIR}/99_Doing`;
 const DONE_DIR = `${VAULT_DIR}/99_Done`;
 
 function parseTicketFile(filepath) {
-  const content = fs.readFileSync(filepath, "utf-8");
   const filename = path.basename(filepath);
 
   // Extract ticket ID from filename (Ticket_001_...)

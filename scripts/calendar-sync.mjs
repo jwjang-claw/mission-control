@@ -8,7 +8,6 @@
  */
 
 import { execSync } from "child_process";
-import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -18,20 +17,6 @@ const projectRoot = join(__dirname, "..");
 
 // Convex 프로젝트 경로 (mission-control 루트)
 const CONVEX_DIR = projectRoot;
-
-/**
- * 잡 이름 파싱 - @openclaw 접두사 제거 및 말줄임표 처리
- *
- * @param {string} rawName - 원본 잡 이름
- * @returns {string} 파싱된 잡 이름
- */
-function parseJobName(rawName) {
-  // @openclaw 접두사 제거
-  let name = rawName.replace(/^@openclaw\s*/, "");
-  // 말줄임표 제거
-  name = name.replace(/\.\.\.+$/, "").trim();
-  return name || rawName;
-}
 
 /**
  * 전체 이름 추출 - JSON 응답에서 전체 이름을 가져옴
@@ -141,18 +126,22 @@ async function syncToConvex(jobs) {
 
     try {
       // spawn을 사용하여 인자를 배열로 전달 (쉘 인자 분리 문제 해결)
-      const result = await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         const proc = spawn("npx", ["convex", "run", "scheduled:upsertCron", "--prod", JSON.stringify(args)], {
           cwd: CONVEX_DIR,
           encoding: "utf-8",
         });
-        
+
         let stdout = "";
         let stderr = "";
-        
-        proc.stdout.on("data", (data) => { stdout += data; });
-        proc.stderr.on("data", (data) => { stderr += data; });
-        
+
+        proc.stdout.on("data", (data) => {
+          stdout += data;
+        });
+        proc.stderr.on("data", (data) => {
+          stderr += data;
+        });
+
         proc.on("close", (code) => {
           if (code === 0) {
             resolve(stdout);
@@ -160,10 +149,10 @@ async function syncToConvex(jobs) {
             reject(new Error(stderr || `Exit code ${code}`));
           }
         });
-        
+
         proc.on("error", reject);
       });
-      
+
       console.log(`✓ Synced: ${job.name}`);
     } catch (error) {
       console.error(`✗ Failed to sync ${job.name}:`, error.message);
