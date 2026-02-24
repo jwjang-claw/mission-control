@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SIDEBAR } from "@/lib/constants";
 
 const navItems = [
   { href: "/tasks", label: "Task Board", icon: "📋" },
@@ -11,11 +12,18 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: "⚙️", disabled: true },
 ];
 
-export const Sidebar = () => {
+interface SidebarProps {
+  width?: number;
+}
+
+export const Sidebar = ({ width = SIDEBAR.DEFAULT_WIDTH }: SidebarProps) => {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[260px] h-screen bg-[var(--color-bg-secondary)] flex flex-col select-none border-r border-[var(--color-border-subtle)] p-3">
+    <aside
+      className="h-screen bg-[var(--color-bg-secondary)] flex flex-col select-none border-r border-[var(--color-border-subtle)] p-3"
+      style={{ width: `${width}px` }}
+    >
       {/* Workspace Selector */}
       <div className="px-5 pt-6 pb-4">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-hover)] cursor-pointer transition-colors group">

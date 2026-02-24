@@ -35,6 +35,14 @@ export const PRIORITIES = {
 
 export type Priority = (typeof PRIORITIES)[keyof typeof PRIORITIES] | undefined;
 
+// Sidebar constants
+export const SIDEBAR = {
+  DEFAULT_WIDTH: 260,
+  MIN_WIDTH: 200,
+  MAX_WIDTH: 400,
+  STORAGE_KEY: "sidebar-width",
+} as const;
+
 // Status display configuration
 export const STATUS_CONFIG: Record<
   TaskStatus,

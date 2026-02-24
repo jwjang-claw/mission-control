@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Sidebar } from "./Sidebar";
+import { SidebarResizer } from "./SidebarResizer";
 import { Header } from "./Header";
+import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -11,6 +13,15 @@ interface MainLayoutProps {
 }
 
 export const MainLayout = ({ children, title, subtitle }: MainLayoutProps) => {
+  const { width, setWidth } = useSidebarWidth();
+
+  const handleWidthChange = useCallback(
+    (delta: number) => {
+      setWidth(width + delta);
+    },
+    [width, setWidth]
+  );
+
   const headerActions = (
     <div className="flex items-center gap-1">
       <button className="px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] rounded transition-colors">
@@ -51,7 +62,8 @@ export const MainLayout = ({ children, title, subtitle }: MainLayoutProps) => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--color-bg-primary)]">
-      <Sidebar />
+      <Sidebar width={width} />
+      <SidebarResizer onWidthChange={handleWidthChange} />
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {title && <Header title={title} actions={headerActions} />}
         <div className="flex-1 overflow-auto">
