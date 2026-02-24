@@ -26,16 +26,28 @@ const PROJECTS = [
 
 const COLUMNS = [
   {
-    id: "pending",
-    title: "Pending",
+    id: "backlog",
+    title: "Backlog",
     color: "var(--color-backlog)",
     bgColor: "var(--color-backlog-bg)",
+  },
+  {
+    id: "pending",
+    title: "Pending",
+    color: "var(--color-pending)",
+    bgColor: "var(--color-pending-bg)",
   },
   {
     id: "in-progress",
     title: "In Progress",
     color: "var(--color-in-progress)",
     bgColor: "var(--color-in-progress-bg)",
+  },
+  {
+    id: "review",
+    title: "Review",
+    color: "var(--color-review)",
+    bgColor: "var(--color-review-bg)",
   },
   {
     id: "blocked",
@@ -48,6 +60,12 @@ const COLUMNS = [
     title: "Done",
     color: "var(--color-done)",
     bgColor: "var(--color-done-bg)",
+  },
+  {
+    id: "recurring",
+    title: "Recurring",
+    color: "var(--color-recurring)",
+    bgColor: "var(--color-recurring-bg)",
   },
 ] as const;
 
@@ -129,7 +147,7 @@ export default function TaskBoard() {
       </div>
 
       {/* Board Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 items-start">
         {COLUMNS.map((col) => {
           const colTasks = filteredTasks.filter((t) => t.status === col.id);
           return (
