@@ -60,28 +60,6 @@ function extractFullTitle(job) {
 }
 
 /**
- * 짧은 이름 생성 - 전체 이름에서 첫 50자 정도로 축약
- * 
- * @param {string} fullTitle - 전체 이름
- * @returns {string} 짧은 이름
- */
-function createShortName(fullTitle) {
-  if (fullTitle.length <= 50) return fullTitle;
-  
-  // 50자에서 마지막 공백 또는 마침표 이후 자르기
-  const truncated = fullTitle.slice(0, 50);
-  const lastSpace = truncated.lastIndexOf(' ');
-  const lastDot = truncated.lastIndexOf('.');
-  
-  const cutPoint = Math.max(lastSpace, lastDot);
-  if (cutPoint > 30) {
-    return truncated.slice(0, cutPoint) + '...';
-  }
-  
-  return truncated + '...';
-}
-
-/**
  * OpenClaw cron list 실행 및 파싱 (JSON 모드)
  * 
  * JSON 출력 형식:
@@ -107,10 +85,9 @@ function getCronJobs() {
 
     for (const job of data.jobs || []) {
       const fullTitle = extractFullTitle(job);
-      const shortName = createShortName(fullTitle);
-      
+
       // schedule 포맷팅: "0 9 * * * @ Asia/Seoul"
-      const schedule = job.schedule 
+      const schedule = job.schedule
         ? `${job.schedule.expr} @ ${job.schedule.tz || 'UTC'}`
         : "unknown";
 
@@ -121,7 +98,7 @@ function getCronJobs() {
 
       jobs.push({
         id: job.id,
-        name: shortName,
+        name: job.name || fullTitle, // OpenClaw의 name 사용 (없으면 fullTitle)
         fullTitle: fullTitle,
         schedule: schedule,
         next: job.state?.nextRunAtMs ? `in ${Math.round((job.state.nextRunAtMs - Date.now()) / 3600000)}h` : "-",
