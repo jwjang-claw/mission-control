@@ -81,6 +81,25 @@ export const listUpcoming = query({
   },
 });
 
+// Cron 잡 삭제
+export const deleteCron = mutation({
+  args: {
+    cronId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("tasks")
+      .withIndex("by_ticket", (q) => q.eq("ticketId", `cron:${args.cronId}`))
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+      return true;
+    }
+    return false;
+  },
+});
+
 // Cron 잡 동기화 (upsert)
 export const upsertCron = mutation({
   args: {

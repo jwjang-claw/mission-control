@@ -14,6 +14,9 @@ importers:
       convex:
         specifier: ^1.32.0
         version: 1.32.0(react@19.2.3)
+      cronstrue:
+        specifier: ^3.12.0
+        version: 3.12.0
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(@playwright/test@1.58.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1547,6 +1550,10 @@ packages:
         optional: true
       react:
         optional: true
+
+  cronstrue@3.12.0:
+    resolution: {integrity: sha512-k9oiM4G7U1GEEktOGfZabldP0gtFWTsaRVqq9X06ifytr73mpSYYdt+zGZBeS5lRCsqMfq0y7oSHycWGIJSo6g==}
+    hasBin: true
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -4173,6 +4180,8 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  cronstrue@3.12.0: {}
 
   cross-spawn@7.0.6:
     dependencies:
