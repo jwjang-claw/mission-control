@@ -78,12 +78,15 @@ function NextUpItem({
 function RecurringTaskItem({
   task,
 }: {
-  task: { _id: string; title: string; recurrence?: string };
+  task: { _id: string; title: string; fullTitle?: string; recurrence?: string };
 }) {
   return (
-    <div className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors">
-      <span className="text-[var(--color-text-primary)]">{task.title}</span>
-      <span className="text-[var(--color-text-tertiary)] text-xs">
+    <div 
+      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors cursor-default"
+      title={task.fullTitle || task.title}
+    >
+      <span className="text-[var(--color-text-primary)] truncate max-w-[60%]">{task.title}</span>
+      <span className="text-[var(--color-text-tertiary)] text-xs shrink-0">
         {task.recurrence ? cronToHumanReadable(task.recurrence) : "Recurring"}
       </span>
     </div>
@@ -269,6 +272,7 @@ export default function CalendarPage() {
                     <div
                       key={task._id}
                       className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)}`}
+                      title={task.fullTitle || task.title}
                     >
                       <div className="font-medium truncate">{task.title}</div>
                       {task.scheduledAt && (
