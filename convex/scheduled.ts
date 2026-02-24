@@ -110,6 +110,7 @@ export const upsertCron = mutation({
     nextRun: v.number(),
     lastRun: v.optional(v.number()),
     status: v.string(),
+    prompt: v.optional(v.string()), // 프롬프트 내용
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -129,6 +130,7 @@ export const upsertCron = mutation({
         scheduledAt: args.nextRun,
         recurrence: args.schedule,
         status: args.status,
+        prompt: args.prompt,
         updatedAt: now,
       });
       return existing._id;
@@ -146,6 +148,7 @@ export const upsertCron = mutation({
         assignee: "Kuro",
         projectId: "openclaw",
         status: args.status,
+        prompt: args.prompt,
         createdAt: now,
         updatedAt: now,
       });

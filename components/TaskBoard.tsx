@@ -73,7 +73,6 @@ const COLUMNS = [
 export default function TaskBoard() {
   const tasks = (useQuery(api.tasks.list) as Task[] | undefined) || [];
   const createTask = useMutation(api.tasks.create);
-  const updateTask = useMutation(api.tasks.update);
   const deleteTask = useMutation(api.tasks.remove);
 
   const [selectedProject, setSelectedProject] = useState<string>("all");
@@ -83,10 +82,6 @@ export default function TaskBoard() {
     selectedProject === "all"
       ? tasks
       : tasks.filter((t) => t.projectId === selectedProject);
-
-  const handleStatusChange = async (taskId: Id<"tasks">, newStatus: string) => {
-    await updateTask({ id: taskId, status: newStatus });
-  };
 
   const handleDelete = async (taskId: Id<"tasks">) => {
     await deleteTask({ id: taskId });
@@ -156,7 +151,6 @@ export default function TaskBoard() {
               key={col.id}
               column={col}
               tasks={colTasks}
-              onStatusChange={handleStatusChange}
               onDelete={handleDelete}
               onCreateTask={handleCreateTask}
             />
@@ -170,13 +164,11 @@ export default function TaskBoard() {
 function Column({
   column,
   tasks,
-  onStatusChange,
   onDelete,
   onCreateTask,
 }: {
   column: (typeof COLUMNS)[number];
   tasks: Task[];
-  onStatusChange: (id: Id<"tasks">, status: string) => Promise<void>;
   onDelete: (id: Id<"tasks">) => Promise<void>;
   onCreateTask: (title: string, status: string) => Promise<void>;
 }) {
@@ -237,12 +229,7 @@ function Column({
       {/* Task List */}
       <div className="space-y-3">
         {tasks.map((task) => (
-          <TaskCard
-            key={task._id}
-            task={task}
-            onStatusChange={onStatusChange}
-            onDelete={onDelete}
-          />
+          <TaskCard key={task._id} task={task} onDelete={onDelete} />
         ))}
 
         {/* Empty state */}
@@ -293,11 +280,9 @@ function Column({
 
 function TaskCard({
   task,
-  onStatusChange,
   onDelete,
 }: {
   task: Task;
-  onStatusChange: (id: Id<"tasks">, status: string) => Promise<void>;
   onDelete: (id: Id<"tasks">) => Promise<void>;
 }) {
   const [showMenu, setShowMenu] = useState(false);

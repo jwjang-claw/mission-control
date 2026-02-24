@@ -3,9 +3,9 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { MemoryNav } from "@/components/MemoryNav";
 import { MemoryDetail } from "@/components/MemoryDetail";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const MEMORY_NAV_WIDTH = 220;
@@ -16,14 +16,6 @@ export default function MemoryPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const memories = useQuery(api.memories.getAll);
-  const seedMemories = useMutation(api.memories.seed);
-
-  // Auto-seed if no memories
-  useEffect(() => {
-    if (memories && memories.length === 0) {
-      seedMemories({}).catch(console.error);
-    }
-  }, [memories, seedMemories]);
 
   // Compute default slug (long-term memory first, then most recent daily)
   const defaultSlug = useMemo(() => {

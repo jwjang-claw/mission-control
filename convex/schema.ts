@@ -42,6 +42,7 @@ export default defineSchema({
     isRecurring: v.optional(v.boolean()), // 반복 여부
     eventType: v.optional(v.string()), // "brief" | "reminder" | "cron"
     fullTitle: v.optional(v.string()), // cron job 전체 이름 (마우스오버용)
+    prompt: v.optional(v.string()), // cron job 프롬프트 내용
 
     tags: v.optional(v.array(v.string())),
     createdAt: v.number(),
@@ -55,4 +56,16 @@ export default defineSchema({
     .index("by_status_and_assignee", ["status", "assignee"])
     .index("by_project_and_status", ["projectId", "status"])
     .index("by_scheduledAt", ["scheduledAt"]),
+
+  agents: defineTable({
+    agentId: v.string(), // "kuro", "robo", "scout", "quill"
+    name: v.string(),
+    role: v.string(),
+    status: v.string(), // "active" | "idle" | "offline"
+    lastSeenAt: v.number(), // timestamp
+    currentTask: v.optional(v.string()),
+    sessionKey: v.optional(v.string()),
+  })
+    .index("by_agentId", ["agentId"])
+    .index("by_status", ["status"]),
 });

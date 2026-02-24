@@ -8,7 +8,6 @@
  */
 
 import { execSync } from "child_process";
-import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -18,20 +17,6 @@ const projectRoot = join(__dirname, "..");
 
 // Convex 프로젝트 경로 (mission-control 루트)
 const CONVEX_DIR = projectRoot;
-
-/**
- * 잡 이름 파싱 - @openclaw 접두사 제거 및 말줄임표 처리
- *
- * @param {string} rawName - 원본 잡 이름
- * @returns {string} 파싱된 잡 이름
- */
-function parseJobName(rawName) {
-  // @openclaw 접두사 제거
-  let name = rawName.replace(/^@openclaw\s*/, "");
-  // 말줄임표 제거
-  name = name.replace(/\.\.\.+$/, "").trim();
-  return name || rawName;
-}
 
 /**
  * 전체 이름 추출 - JSON 응답에서 전체 이름을 가져옴
@@ -60,28 +45,6 @@ function extractFullTitle(job) {
 }
 
 /**
- * 짧은 이름 생성 - 전체 이름에서 첫 50자 정도로 축약
- * 
- * @param {string} fullTitle - 전체 이름
- * @returns {string} 짧은 이름
- */
-function createShortName(fullTitle) {
-  if (fullTitle.length <= 50) return fullTitle;
-  
-  // 50자에서 마지막 공백 또는 마침표 이후 자르기
-  const truncated = fullTitle.slice(0, 50);
-  const lastSpace = truncated.lastIndexOf(' ');
-  const lastDot = truncated.lastIndexOf('.');
-  
-  const cutPoint = Math.max(lastSpace, lastDot);
-  if (cutPoint > 30) {
-    return truncated.slice(0, cutPoint) + '...';
-  }
-  
-  return truncated + '...';
-}
-
-/**
  * OpenClaw cron list 실행 및 파싱 (JSON 모드)
  * 
  * JSON 출력 형식:
@@ -107,16 +70,20 @@ function getCronJobs() {
 
     for (const job of data.jobs || []) {
       const fullTitle = extractFullTitle(job);
-      const shortName = createShortName(fullTitle);
-      
+
       // schedule 포맷팅: "0 9 * * * @ Asia/Seoul"
-      const schedule = job.schedule 
+      const schedule = job.schedule
         ? `${job.schedule.expr} @ ${job.schedule.tz || 'UTC'}`
         : "unknown";
 
+      // 프롬프트 추출 (전체 메시지 내용)
+      const prompt = job.payload?.kind === "agentTurn" && job.payload?.message
+        ? job.payload.message.replace(/^@openclaw\s*/, "")
+        : null;
+
       jobs.push({
         id: job.id,
-        name: shortName,
+        name: job.name || fullTitle, // OpenClaw의 name 사용 (없으면 fullTitle)
         fullTitle: fullTitle,
         schedule: schedule,
         next: job.state?.nextRunAtMs ? `in ${Math.round((job.state.nextRunAtMs - Date.now()) / 3600000)}h` : "-",
@@ -124,6 +91,7 @@ function getCronJobs() {
         nextRun: job.state?.nextRunAtMs || Date.now(),
         lastRun: job.state?.lastRunAtMs,
         status: job.state?.lastStatus || "ok",
+        prompt: prompt,
       });
     }
 
@@ -139,7 +107,7 @@ function getCronJobs() {
  */
 async function syncToConvex(jobs) {
   const { spawn } = await import("child_process");
-  
+
   for (const job of jobs) {
     const args = {
       cronId: job.id,
@@ -151,20 +119,29 @@ async function syncToConvex(jobs) {
       status: job.status,
     };
 
+    // prompt가 있으면 추가 (null/undefined인 경우 제외)
+    if (job.prompt != null) {
+      args.prompt = job.prompt;
+    }
+
     try {
       // spawn을 사용하여 인자를 배열로 전달 (쉘 인자 분리 문제 해결)
-      const result = await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         const proc = spawn("npx", ["convex", "run", "scheduled:upsertCron", "--prod", JSON.stringify(args)], {
           cwd: CONVEX_DIR,
           encoding: "utf-8",
         });
-        
+
         let stdout = "";
         let stderr = "";
-        
-        proc.stdout.on("data", (data) => { stdout += data; });
-        proc.stderr.on("data", (data) => { stderr += data; });
-        
+
+        proc.stdout.on("data", (data) => {
+          stdout += data;
+        });
+        proc.stderr.on("data", (data) => {
+          stderr += data;
+        });
+
         proc.on("close", (code) => {
           if (code === 0) {
             resolve(stdout);
@@ -172,10 +149,10 @@ async function syncToConvex(jobs) {
             reject(new Error(stderr || `Exit code ${code}`));
           }
         });
-        
+
         proc.on("error", reject);
       });
-      
+
       console.log(`✓ Synced: ${job.name}`);
     } catch (error) {
       console.error(`✗ Failed to sync ${job.name}:`, error.message);
@@ -204,6 +181,7 @@ async function main() {
     nextRun: Date.now() + 30 * 60 * 1000,
     lastRun: undefined,
     status: "ok",
+    prompt: null,
   });
 
   console.log("📤 Syncing to Convex...");

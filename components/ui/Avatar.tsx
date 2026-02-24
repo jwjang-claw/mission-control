@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 export interface AvatarProps {
   name: string;
@@ -32,9 +33,11 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         }}
       >
         {src ? (
-          <img
+          <Image
             src={src}
             alt={name}
+            width={32}
+            height={32}
             className="w-full h-full rounded-full object-cover"
           />
         ) : (

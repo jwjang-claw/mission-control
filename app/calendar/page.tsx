@@ -3,8 +3,10 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useState, useMemo } from "react";
 import { cronToHumanReadable } from "@/lib/cron";
+import { CronDetailModal } from "@/components/CronDetailModal";
 
 // 주간 날짜 계산
 function getWeekDates(date: Date): Date[] {
@@ -32,6 +34,28 @@ function formatTime(timestamp: number): string {
 // 요일 이름
 function getDayName(date: Date): string {
   return date.toLocaleDateString("en-US", { weekday: "short" });
+}
+
+// 크론 시간을 해당 날짜의 타임스탬프로 변환
+function getCronTimeForDate(
+  recurrence: string | undefined,
+  date: Date
+): number {
+  if (!recurrence) return date.getTime();
+  const cronExpr = recurrence.split(" @ ")[0].trim();
+  const parts = cronExpr.split(" ");
+  if (parts.length >= 2) {
+    const [min, hour] = parts;
+    const d = new Date(date);
+    const hourNum = hour === "*" ? 0 : parseInt(hour.replace(/[^\d]/g, ""));
+    const minNum = min === "*" ? 0 : parseInt(min.replace(/[^\d]/g, ""));
+    // NaN가 아니면 설정, 아니면 0시 0분 사용
+    if (!isNaN(hourNum) && !isNaN(minNum)) {
+      d.setHours(hourNum, minNum, 0, 0);
+      return d.getTime();
+    }
+  }
+  return date.getTime();
 }
 
 // 이벤트 색상 (Notion 스타일)
@@ -77,15 +101,20 @@ function NextUpItem({
 // Recurring Task 아이템
 function RecurringTaskItem({
   task,
+  onClick,
 }: {
-  task: { _id: string; title: string; fullTitle?: string; recurrence?: string };
+  task: Doc<"tasks">;
+  onClick: (task: Doc<"tasks">) => void;
 }) {
   return (
-    <div 
-      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors cursor-default"
+    <div
+      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
       title={task.fullTitle || task.title}
+      onClick={() => onClick(task)}
     >
-      <span className="text-[var(--color-text-primary)] truncate max-w-[60%]">{task.title}</span>
+      <span className="text-[var(--color-text-primary)] truncate max-w-[60%]">
+        {task.title}
+      </span>
       <span className="text-[var(--color-text-tertiary)] text-xs shrink-0">
         {task.recurrence ? cronToHumanReadable(task.recurrence) : "Recurring"}
       </span>
@@ -95,6 +124,11 @@ function RecurringTaskItem({
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedTask, setSelectedTask] = useState<
+    (typeof scheduledTasks)[number] | null
+  >(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
 
   // 주간 범위 계산
@@ -118,11 +152,44 @@ export default function CalendarPage() {
   // 반복 작업 조회
   const recurringTasks = useQuery(api.scheduled.listRecurring) || [];
 
+  // 일간 크론인지 확인 (매일 같은 시간에 실행)
+  const isDailyCron = (recurrence?: string): boolean => {
+    if (!recurrence) return false;
+    // "0 9 * * *" 형식 (시간 분 * * *)
+    const cronExpr = recurrence.split(" @ ")[0].trim();
+    const parts = cronExpr.split(" ");
+    // 분 시간 일 월 요일 -> 5부
+    if (parts.length !== 5) return false;
+    const [min, hour, day, month, weekday] = parts;
+    // 간격 표현(*/30)이 포함되면 일간으로 간주하지 않음
+    if (min.includes("/") || hour.includes("/")) return false;
+    // 시간에 *가 포함되면 일간으로 간주하지 않음 (매시간 실행 등)
+    if (hour === "*") return false;
+    // 일(*), 월(*), 요일(*)이면 일간
+    return day === "*" && month === "*" && weekday === "*";
+  };
+
+  // 30분마다 실행인지 확인
+  const isInterval30Min = (recurrence?: string): boolean => {
+    if (!recurrence) return false;
+    const cronExpr = recurrence.split(" @ ")[0].trim();
+    return cronExpr === "*/30 * * * *" || cronExpr.startsWith("*/30");
+  };
+
   // 이번 주 작업 필터링
   const thisWeekTasks = scheduledTasks.filter((t) => {
     if (!t.scheduledAt) return false;
+    // 30분마다 실행은 캘린더에서 제외
+    if (isInterval30Min(t.recurrence)) return false;
+    // 일간 크론은 제외 (dailyRecurringTasks에서 추가됨)
+    if (isDailyCron(t.recurrence)) return false;
     return t.scheduledAt >= weekRange.start && t.scheduledAt < weekRange.end;
   });
+
+  // 일간 반복 작업 (매일 표시)
+  const dailyRecurringTasks = recurringTasks.filter((t) =>
+    isDailyCron(t.recurrence)
+  );
 
   // 날짜별로 그룹화
   const tasksByDate = useMemo(() => {
@@ -130,6 +197,8 @@ export default function CalendarPage() {
     weekDates.forEach((d) => {
       map[d.toDateString()] = [];
     });
+
+    // 예정된 작업 추가
     thisWeekTasks.forEach((task) => {
       if (task.scheduledAt) {
         const dateStr = new Date(task.scheduledAt).toDateString();
@@ -138,8 +207,24 @@ export default function CalendarPage() {
         }
       }
     });
+
+    // 일간 반복 작업을 모든 요일에 추가
+    dailyRecurringTasks.forEach((task) => {
+      weekDates.forEach((date) => {
+        const dateStr = date.toDateString();
+        if (map[dateStr]) {
+          // scheduledAt을 해당 날짜의 크론 시간으로 설정
+          const cronTime = getCronTimeForDate(task.recurrence, date);
+          map[dateStr].push({
+            ...task,
+            scheduledAt: cronTime,
+          });
+        }
+      });
+    });
+
     return map;
-  }, [weekDates, thisWeekTasks]);
+  }, [weekDates, thisWeekTasks, dailyRecurringTasks]);
 
   // 이전/다음 주 이동
   const goToToday = () => setCurrentDate(new Date());
@@ -152,6 +237,18 @@ export default function CalendarPage() {
     const newDate = new Date(currentDate);
     newDate.setDate(currentDate.getDate() + 7);
     setCurrentDate(newDate);
+  };
+
+  // 크론 잡 클릭 핸들러
+  const handleTaskClick = (task: (typeof recurringTasks)[number]) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
   };
 
   return (
@@ -173,7 +270,11 @@ export default function CalendarPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               {recurringTasks.map((task) => (
-                <RecurringTaskItem key={task._id} task={task} />
+                <RecurringTaskItem
+                  key={task._id}
+                  task={task}
+                  onClick={handleTaskClick}
+                />
               ))}
             </div>
           )}
@@ -271,8 +372,9 @@ export default function CalendarPage() {
                   {tasks.map((task) => (
                     <div
                       key={task._id}
-                      className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)}`}
+                      className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)} cursor-pointer hover:opacity-80 transition-opacity`}
                       title={task.fullTitle || task.title}
+                      onClick={() => handleTaskClick(task)}
                     >
                       <div className="font-medium truncate">{task.title}</div>
                       {task.scheduledAt && (
@@ -319,6 +421,11 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      {/* Cron Detail Modal */}
+      {isModalOpen && selectedTask && (
+        <CronDetailModal task={selectedTask} onClose={handleCloseModal} />
+      )}
     </MainLayout>
   );
 }

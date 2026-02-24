@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { SIDEBAR } from "@/lib/constants";
 
 type SidebarWidthHook = {
@@ -9,22 +9,20 @@ type SidebarWidthHook = {
 };
 
 export function useSidebarWidth(): SidebarWidthHook {
-  // Always start with default width to match server render
-  const [width, setWidthState] = useState<number>(SIDEBAR.DEFAULT_WIDTH);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Read stored width after hydration to avoid mismatch
-  useEffect(() => {
+  // Initialize from localStorage to avoid hydration mismatch
+  const getInitialWidth = (): number => {
+    if (typeof window === "undefined") return SIDEBAR.DEFAULT_WIDTH;
     const stored = localStorage.getItem(SIDEBAR.STORAGE_KEY);
     if (stored) {
       const parsed = parseInt(stored, 10);
       if (!isNaN(parsed)) {
-        const clamped = Math.max(SIDEBAR.MIN_WIDTH, Math.min(SIDEBAR.MAX_WIDTH, parsed));
-        setWidthState(clamped);
+        return Math.max(SIDEBAR.MIN_WIDTH, Math.min(SIDEBAR.MAX_WIDTH, parsed));
       }
     }
-    setIsHydrated(true);
-  }, []);
+    return SIDEBAR.DEFAULT_WIDTH;
+  };
+
+  const [width, setWidthState] = useState<number>(getInitialWidth);
 
   const setWidth = useCallback((newWidth: number) => {
     const clamped = Math.max(

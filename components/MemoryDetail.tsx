@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { MemoryEntry } from "@/lib/memory";
 
 interface MemoryDetailProps {
   slug: string | null;
@@ -19,16 +18,6 @@ function formatBytes(content: string): string {
 
 function countWords(content: string): number {
   return content.trim().split(/\s+/).length;
-}
-
-function formatDateFull(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 function formatRelativeTime(timestamp: number): string {
@@ -104,10 +93,8 @@ function MarkdownContent({ content }: { content: string }) {
 
 function SectionCard({
   section,
-  index,
 }: {
   section: { time: string; title: string; content: string };
-  index: number;
 }) {
   return (
     <div className="bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-border-subtle)] overflow-hidden">
@@ -156,7 +143,6 @@ export function MemoryDetail({
   onSelectPrev,
 }: MemoryDetailProps) {
   const memory = useQuery(api.memories.getBySlug, slug ? { slug } : "skip");
-  const seedMemories = useMutation(api.memories.seed);
 
   // Loading state
   if (slug && memory === undefined) {
@@ -250,7 +236,7 @@ export function MemoryDetail({
       <div className="p-6 space-y-4">
         {memory.sections.length > 0 ? (
           memory.sections.map((section, idx) => (
-            <SectionCard key={idx} section={section} index={idx} />
+            <SectionCard key={idx} section={section} />
           ))
         ) : (
           <div className="bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-border-subtle)] p-6">

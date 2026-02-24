@@ -122,7 +122,7 @@ describe("TaskBoard", () => {
       expect(mockCreate).toHaveBeenCalledWith({
         title: "New task from test",
         assignee: "Kuro",
-        status: "pending",
+        status: "backlog",
       });
     });
   });
