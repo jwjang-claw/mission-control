@@ -8,6 +8,7 @@ import { FormEvent, useState } from "react";
 type Task = {
   _id: Id<"tasks">;
   title: string;
+  description?: string; // 상세 계획/본문
   assignee: string;
   status: string;
   updatedAt: number;
@@ -202,7 +203,7 @@ function Column({
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: column.color }}
           />
-          <h3 className="text-[13px] font-semibold text-[var(--color-text-secondary)] tracking-tight">
+          <h3 className="text-[13px] font-semibold text-[var(--color-text-secondary)] tracking-tight whitespace-nowrap">
             {column.title}
           </h3>
           <span
@@ -381,6 +382,13 @@ function TaskCard({
 
       {showMenu && (
         <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] space-y-3">
+          {/* 상세 설명 */}
+          {task.description && (
+            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+              {task.description}
+            </p>
+          )}
+
           {/* 전략 메모 */}
           {task.strategyNote && (
             <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
