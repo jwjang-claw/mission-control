@@ -181,6 +181,8 @@ export default function CalendarPage() {
     if (!t.scheduledAt) return false;
     // 30분마다 실행은 캘린더에서 제외
     if (isInterval30Min(t.recurrence)) return false;
+    // 일간 크론은 제외 (dailyRecurringTasks에서 추가됨)
+    if (isDailyCron(t.recurrence)) return false;
     return t.scheduledAt >= weekRange.start && t.scheduledAt < weekRange.end;
   });
 
