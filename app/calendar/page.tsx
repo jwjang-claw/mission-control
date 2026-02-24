@@ -36,6 +36,23 @@ function getDayName(date: Date): string {
   return date.toLocaleDateString("en-US", { weekday: "short" });
 }
 
+// 크론 시간을 해당 날짜의 타임스탬프로 변환
+function getCronTimeForDate(
+  recurrence: string | undefined,
+  date: Date
+): number {
+  if (!recurrence) return date.getTime();
+  const cronExpr = recurrence.split(" @ ")[0].trim();
+  const parts = cronExpr.split(" ");
+  if (parts.length >= 2) {
+    const [min, hour] = parts;
+    const d = new Date(date);
+    d.setHours(parseInt(hour), parseInt(min), 0, 0);
+    return d.getTime();
+  }
+  return date.getTime();
+}
+
 // 이벤트 색상 (Notion 스타일)
 function getEventColor(eventType?: string): string {
   switch (eventType) {
@@ -130,11 +147,38 @@ export default function CalendarPage() {
   // 반복 작업 조회
   const recurringTasks = useQuery(api.scheduled.listRecurring) || [];
 
+  // 일간 크론인지 확인 (매일 같은 시간에 실행)
+  const isDailyCron = (recurrence?: string): boolean => {
+    if (!recurrence) return false;
+    // "0 9 * * *" 형식 (시간 분 * * *)
+    const cronExpr = recurrence.split(" @ ")[0].trim();
+    const parts = cronExpr.split(" ");
+    // 분 시간 일 월 요일 -> 5부
+    if (parts.length !== 5) return false;
+    const [min, hour, day, month, weekday] = parts;
+    // 일(*), 월(*), 요일(*)이면 일간
+    return day === "*" && month === "*" && weekday === "*";
+  };
+
+  // 30분마다 실행인지 확인
+  const isInterval30Min = (recurrence?: string): boolean => {
+    if (!recurrence) return false;
+    const cronExpr = recurrence.split(" @ ")[0].trim();
+    return cronExpr === "*/30 * * * *" || cronExpr.startsWith("*/30");
+  };
+
   // 이번 주 작업 필터링
   const thisWeekTasks = scheduledTasks.filter((t) => {
     if (!t.scheduledAt) return false;
+    // 30분마다 실행은 캘린더에서 제외
+    if (isInterval30Min(t.recurrence)) return false;
     return t.scheduledAt >= weekRange.start && t.scheduledAt < weekRange.end;
   });
+
+  // 일간 반복 작업 (매일 표시)
+  const dailyRecurringTasks = recurringTasks.filter((t) =>
+    isDailyCron(t.recurrence)
+  );
 
   // 날짜별로 그룹화
   const tasksByDate = useMemo(() => {
@@ -142,6 +186,8 @@ export default function CalendarPage() {
     weekDates.forEach((d) => {
       map[d.toDateString()] = [];
     });
+
+    // 예정된 작업 추가
     thisWeekTasks.forEach((task) => {
       if (task.scheduledAt) {
         const dateStr = new Date(task.scheduledAt).toDateString();
@@ -150,8 +196,24 @@ export default function CalendarPage() {
         }
       }
     });
+
+    // 일간 반복 작업을 모든 요일에 추가
+    dailyRecurringTasks.forEach((task) => {
+      weekDates.forEach((date) => {
+        const dateStr = date.toDateString();
+        if (map[dateStr]) {
+          // scheduledAt을 해당 날짜의 크론 시간으로 설정
+          const cronTime = getCronTimeForDate(task.recurrence, date);
+          map[dateStr].push({
+            ...task,
+            scheduledAt: cronTime,
+          });
+        }
+      });
+    });
+
     return map;
-  }, [weekDates, thisWeekTasks]);
+  }, [weekDates, thisWeekTasks, dailyRecurringTasks]);
 
   // 이전/다음 주 이동
   const goToToday = () => setCurrentDate(new Date());
