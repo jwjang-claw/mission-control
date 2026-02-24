@@ -29,7 +29,6 @@ export const TaskCard = ({
   const updateTask = useMutation(api.tasks.update);
   const removeTask = useMutation(api.tasks.remove);
 
-  const statusConfig = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
   const assigneeConfig =
     ASSIGNEE_CONFIG[assignee as keyof typeof ASSIGNEE_CONFIG];
 
@@ -133,7 +132,7 @@ export const TaskCard = ({
           onChange={(e) => handleStatusChange(e.target.value)}
           className="w-full text-xs px-2 py-1.5 border border-[var(--color-border-default)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--color-in-progress)]"
         >
-          {Object.entries(TASK_STATUSES).map(([key, value]) => (
+          {Object.values(TASK_STATUSES).map((value) => (
             <option key={value} value={value}>
               {STATUS_CONFIG[value as keyof typeof STATUS_CONFIG].label}
             </option>
