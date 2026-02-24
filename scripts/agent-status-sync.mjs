@@ -13,8 +13,30 @@
 
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api.js";
-import { readdir, stat } from "fs/promises";
-import { join } from "path";
+import { readdir, stat, readFile } from "fs/promises";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// .env.local에서 환경변수 로드
+async function loadEnv() {
+  try {
+    const envPath = join(__dirname, "..", ".env.local");
+    const content = await readFile(envPath, "utf-8");
+    for (const line of content.split("\n")) {
+      const [key, ...valueParts] = line.split("=");
+      if (key && valueParts.length > 0) {
+        const value = valueParts.join("=").trim().replace(/^["']|["']$/g, "");
+        process.env[key.trim()] = process.env[key.trim()] || value;
+      }
+    }
+  } catch {
+    // .env.local not found, use existing env
+  }
+}
+
+await loadEnv();
 
 const CONVEX_URL =
   process.env.NEXT_PUBLIC_CONVEX_URL || "https://giddy-shepherd-504.convex.cloud";
@@ -90,6 +112,7 @@ function formatElapsed(ms) {
 async function main() {
   console.log("🔄 Agent Status Sync");
   console.log(`   Time: ${new Date().toISOString()}`);
+  console.log(`   Convex URL: ${CONVEX_URL}`);
   if (DRY_RUN) console.log("   Mode: DRY RUN (no updates)\n");
 
   const results = [];
@@ -114,16 +137,19 @@ async function main() {
           status,
         });
         result.convexId = id;
+        console.log(`      → Convex ID: ${id}`);
       } catch (error) {
         result.error = error.message;
+        console.log(`      → Error: ${error.message}`);
       }
     }
 
     // Display result
     const statusEmoji =
       status === "active" ? "🟢" : status === "idle" ? "🟡" : "⚫";
+    const syncStatus = result.error ? `❌ ${result.error}` : (result.convexId ? "✓" : "");
     console.log(
-      `   ${statusEmoji} ${agent.name.padEnd(6)} ${status.padEnd(8)} (last: ${result.lastActivity})`
+      `   ${statusEmoji} ${agent.name.padEnd(6)} ${status.padEnd(8)} (last: ${result.lastActivity}) ${syncStatus}`
     );
   }
 
