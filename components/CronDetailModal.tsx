@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback } from "react";
+import { cronToHumanReadable } from "@/lib/cron";
 
 interface CronDetailModalProps {
   task: {
@@ -33,12 +34,7 @@ function formatTimestamp(timestamp?: number): string {
 
 function formatRecurrence(recurrence?: string): string {
   if (!recurrence) return "Once";
-  // "0 9 * * * @ Asia/Seoul" 형식 파싱
-  const parts = recurrence.split(" @ ");
-  if (parts.length === 2) {
-    return `${parts[0]} (${parts[1]})`;
-  }
-  return recurrence;
+  return cronToHumanReadable(recurrence);
 }
 
 function getStatusColor(status?: string): string {
@@ -194,7 +190,9 @@ export function CronDetailModal({ task, onClose }: CronDetailModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <InfoCard
               label="Schedule"
-              value={task.description || "-"}
+              value={
+                task.description ? cronToHumanReadable(task.description) : "-"
+              }
               icon={
                 <svg
                   className="w-4 h-4"
