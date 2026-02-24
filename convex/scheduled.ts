@@ -80,3 +80,54 @@ export const listUpcoming = query({
     return tasks.sort((a, b) => (a.scheduledAt ?? 0) - (b.scheduledAt ?? 0));
   },
 });
+
+// Cron 잡 동기화 (upsert)
+export const upsertCron = mutation({
+  args: {
+    cronId: v.string(), // OpenClaw cron ID
+    name: v.string(),
+    schedule: v.string(),
+    nextRun: v.number(),
+    lastRun: v.optional(v.number()),
+    status: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // 기존 cron 잡 찾기 (ticketId로 식별)
+    const existing = await ctx.db
+      .query("tasks")
+      .withIndex("by_ticket", (q) => q.eq("ticketId", `cron:${args.cronId}`))
+      .first();
+
+    if (existing) {
+      // 업데이트
+      await ctx.db.patch(existing._id, {
+        title: args.name,
+        description: args.schedule,
+        scheduledAt: args.nextRun,
+        recurrence: args.schedule,
+        status: args.status,
+        updatedAt: now,
+      });
+      return existing._id;
+    } else {
+      // 새로 생성
+      const taskId = await ctx.db.insert("tasks", {
+        title: args.name,
+        description: args.schedule,
+        ticketId: `cron:${args.cronId}`,
+        scheduledAt: args.nextRun,
+        recurrence: args.schedule,
+        isRecurring: true,
+        eventType: "cron",
+        assignee: "Kuro",
+        projectId: "openclaw",
+        status: args.status,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return taskId;
+    }
+  },
+});
