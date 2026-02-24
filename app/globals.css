@@ -17,8 +17,10 @@
   /* Status Colors */
   --color-recurring: #9b9a97;
   --color-recurring-bg: #f7f7f5;
-  --color-backlog: #d3d1cb;
+  --color-backlog: #9b9a97;
   --color-backlog-bg: #f7f7f5;
+  --color-pending: #787774;
+  --color-pending-bg: #efefef;
   --color-in-progress: #0f7b6c;
   --color-in-progress-bg: #ddf5f2;
   --color-review: #d9730d;
@@ -72,6 +74,7 @@
 
   --color-recurring: var(--color-recurring);
   --color-backlog: var(--color-backlog);
+  --color-pending: var(--color-pending);
   --color-in-progress: var(--color-in-progress);
   --color-review: var(--color-review);
   --color-done: var(--color-done);
