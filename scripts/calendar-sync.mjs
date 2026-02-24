@@ -134,10 +134,15 @@ async function main() {
   const jobs = getCronJobs();
   console.log(`📋 Found ${jobs.length} cron job(s)`);
 
-  if (jobs.length === 0) {
-    console.log("No cron jobs to sync");
-    return;
-  }
+  // 자기 자신(30분마다 실행)도 추가
+  jobs.push({
+    id: "calendar-sync-script",
+    name: "Calendar Sync",
+    schedule: "*/30 * * * *",
+    next: "in 30m",
+    last: "-",
+    status: "ok",
+  });
 
   console.log("📤 Syncing to Convex...");
   await syncToConvex(jobs);

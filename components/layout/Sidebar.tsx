@@ -8,6 +8,7 @@ import { SIDEBAR } from "@/lib/constants";
 const navItems = [
   { href: "/tasks", label: "Task Board", icon: "📋" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
+  { href: "/memory", label: "Memory", icon: "📚" },
   { href: "/dashboard", label: "Dashboard", icon: "📊", disabled: true },
   { href: "/settings", label: "Settings", icon: "⚙️", disabled: true },
 ];
