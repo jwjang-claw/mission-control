@@ -1,55 +1,102 @@
 "use client";
 
 import { MainLayout } from "@/components/layout/MainLayout";
-import { MemoryCard } from "@/components/MemoryCard";
-import { fetchMemories, MemoryEntry } from "@/lib/memory";
-import { useState, useMemo, useEffect } from "react";
+import { MemoryNav } from "@/components/MemoryNav";
+import { MemoryDetail } from "@/components/MemoryDetail";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useState, useEffect, useMemo } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+
+const MEMORY_NAV_WIDTH = 220;
 
 export default function MemoryPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [memories, setMemories] = useState<MemoryEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [showNav, setShowNav] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
-  // Fetch memories on mount
+  const memories = useQuery(api.memories.getAll);
+  const seedMemories = useMutation(api.memories.seed);
+
+  // Auto-seed if no memories
   useEffect(() => {
-    fetchMemories()
-      .then((data) => {
-        setMemories(data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load memories:", err);
-        setError("Failed to load memories");
-        setIsLoading(false);
-      });
-  }, []);
+    if (memories && memories.length === 0) {
+      seedMemories({}).catch(console.error);
+    }
+  }, [memories, seedMemories]);
 
-  // Filter memories based on search query
-  const filteredMemories = useMemo(() => {
-    if (!searchQuery.trim()) return memories;
+  // Compute default slug (long-term memory first, then most recent daily)
+  const defaultSlug = useMemo(() => {
+    if (!memories || memories.length === 0) return null;
+    const longTerm = memories.find((m) => m.isLongTerm);
+    if (longTerm) return longTerm.slug;
+    const dailyMemories = memories.filter((m) => !m.isLongTerm);
+    return dailyMemories[0]?.slug || null;
+  }, [memories]);
 
-    const query = searchQuery.toLowerCase();
-    return memories.filter((memory) => {
-      // Search in title
-      if (memory.title.toLowerCase().includes(query)) return true;
+  // Use selectedSlug if set, otherwise fall back to defaultSlug
+  const activeSlug = selectedSlug ?? defaultSlug;
 
-      // Search in sections
-      return memory.sections.some(
-        (section) =>
-          section.title.toLowerCase().includes(query) ||
-          section.content.toLowerCase().includes(query)
-      );
-    });
-  }, [memories, searchQuery]);
+  // Get ordered slugs for navigation
+  const orderedSlugs = useMemo(() => {
+    if (!memories) return [];
+    const longTerm = memories.filter((m) => m.isLongTerm);
+    const daily = memories.filter((m) => !m.isLongTerm);
+    return [...longTerm, ...daily].map((m) => m.slug);
+  }, [memories]);
+
+  // Navigate to previous/next
+  const handlePrev = () => {
+    if (!activeSlug) return;
+    const idx = orderedSlugs.indexOf(activeSlug);
+    if (idx > 0) {
+      setSelectedSlug(orderedSlugs[idx - 1]);
+    }
+  };
+
+  const handleNext = () => {
+    if (!activeSlug) return;
+    const idx = orderedSlugs.indexOf(activeSlug);
+    if (idx < orderedSlugs.length - 1) {
+      setSelectedSlug(orderedSlugs[idx + 1]);
+    }
+  };
+
+  // Handle memory selection - close nav on mobile after selection
+  const handleSelectMemory = (slug: string) => {
+    setSelectedSlug(slug);
+    if (isMobile) {
+      setShowNav(false);
+    }
+  };
+
+  // Get selected memory title for mobile toggle button
+  const selectedMemory = useMemo(() => {
+    if (!memories || !activeSlug) return null;
+    return memories.find((m) => m.slug === activeSlug);
+  }, [memories, activeSlug]);
 
   return (
-    <MainLayout title="Memory" subtitle="Your journal and long-term memory">
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
+    <MainLayout
+      title="Memory"
+      subtitle="Your journal and knowledge base"
+      fullWidth
+      showResizer={false}
+    >
+      {/* 모바일: 네비게이션 토글 버튼 */}
+      {isMobile && (
+        <button
+          onClick={() => setShowNav(!showNav)}
+          className="flex items-center gap-2 p-3 bg-[var(--color-bg-secondary)] rounded-lg mb-2 mx-4 min-h-[44px] touch-active border border-[var(--color-border-subtle)]"
+        >
+          <span className="text-lg">📚</span>
+          <span className="flex-1 text-left text-sm font-medium text-[var(--color-text-primary)] truncate">
+            {selectedMemory?.isLongTerm
+              ? "Long-Term Memory"
+              : selectedMemory?.title || "Select Memory"}
+          </span>
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]"
+            className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform ${showNav ? "rotate-180" : ""}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -58,101 +105,80 @@ export default function MemoryPage() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              d="M19 9l-7 7-7-7"
             />
           </svg>
-          <input
-            type="text"
-            placeholder="Search memory..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] rounded-lg text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-default)] transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        </button>
+      )}
+
+      <div className="h-full flex flex-col md:flex-row px-4 md:px-6">
+        {/* 네비게이션 */}
+        <div
+          className={`
+            ${showNav || !isMobile ? "block" : "hidden"}
+            md:block
+            h-full border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-secondary)]
+            fixed md:relative inset-0 md:inset-auto z-40 md:z-auto
+            md:w-[${MEMORY_NAV_WIDTH}px] md:flex-shrink-0
+          `}
+          style={{ width: isMobile ? "100%" : `${MEMORY_NAV_WIDTH}px` }}
+        >
+          {/* 모바일 닫기 버튼 */}
+          {isMobile && showNav && (
+            <div className="flex items-center justify-between p-3 border-b border-[var(--color-border-subtle)]">
+              <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                Memories
+              </span>
+              <button
+                onClick={() => setShowNav(false)}
+                className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded-lg transition-colors touch-target"
+                aria-label="Close navigation"
               >
-                <path
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Memory Stats */}
-      <div className="mb-6 flex items-center gap-4 text-sm text-[var(--color-text-tertiary)]">
-        <span>
-          {filteredMemories.length}{" "}
-          {filteredMemories.length === 1 ? "entry" : "entries"}
-        </span>
-        {searchQuery && (
-          <span className="text-amber-500">
-            {memories.length - filteredMemories.length} filtered out
-          </span>
-        )}
-      </div>
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="text-center py-12">
-          <div className="animate-pulse text-4xl mb-3">📚</div>
-          <p className="text-[var(--color-text-secondary)]">
-            Loading memories...
-          </p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">⚠️</div>
-          <p className="text-red-400">{error}</p>
-        </div>
-      )}
-
-      {/* Memory List */}
-      {!isLoading && !error && (
-        <div className="space-y-4">
-          {filteredMemories.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-3">📚</div>
-              <p className="text-[var(--color-text-secondary)]">
-                {searchQuery
-                  ? "No memories found matching your search"
-                  : "No memories yet"}
-              </p>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="mt-2 text-sm text-[var(--color-accent)] hover:underline"
                 >
-                  Clear search
-                </button>
-              )}
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
-          ) : (
-            filteredMemories.map((memory) => (
-              <MemoryCard
-                key={memory.slug}
-                memory={memory}
-                searchQuery={searchQuery}
-              />
-            ))
           )}
+          <div className="h-full flex flex-col">
+            {/* Navigation */}
+            <div className="flex-1 overflow-hidden">
+              <MemoryNav
+                selectedSlug={activeSlug}
+                onSelect={handleSelectMemory}
+              />
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* 오버레이 (모바일에서만) */}
+        {isMobile && showNav && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 animate-fade-in"
+            onClick={() => setShowNav(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* 상세 */}
+        <div className="flex-1 h-full overflow-hidden">
+          <MemoryDetail
+            slug={activeSlug}
+            onSelectPrev={handlePrev}
+            onSelectNext={handleNext}
+          />
+        </div>
+      </div>
     </MainLayout>
   );
 }

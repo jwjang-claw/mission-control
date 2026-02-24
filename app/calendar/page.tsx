@@ -66,7 +66,9 @@ function NextUpItem({
   return (
     <div className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors">
       <span className="text-[var(--color-text-primary)]">{task.title}</span>
-      <span className="text-[var(--color-text-tertiary)] text-xs">{formattedTime}</span>
+      <span className="text-[var(--color-text-tertiary)] text-xs">
+        {formattedTime}
+      </span>
     </div>
   );
 }
@@ -151,7 +153,7 @@ export default function CalendarPage() {
   return (
     <MainLayout title="Scheduled Tasks" subtitle="Kuro's automated routines">
       {/* Always Running 섹션 - 상단 */}
-      <div className="bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border-subtle)] p-4 mb-6">
+      <div className="bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border-subtle)] p-3 sm:p-4 mb-4 sm:mb-6">
         <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
           <span className="text-base">⭐</span>
           <span>Always Running</span>
@@ -161,9 +163,11 @@ export default function CalendarPage() {
         </h3>
         <div className="space-y-0.5">
           {recurringTasks.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-tertiary)] py-2">No recurring tasks</p>
+            <p className="text-sm text-[var(--color-text-tertiary)] py-2">
+              No recurring tasks
+            </p>
           ) : (
-            <div className="grid grid-cols-2 gap-x-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               {recurringTasks.map((task) => (
                 <RecurringTaskItem key={task._id} task={task} />
               ))}
@@ -177,13 +181,13 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={goToToday}
-            className="px-3 py-1.5 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] rounded-md hover:bg-[var(--color-bg-hover)] transition-colors"
+            className="px-3 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] rounded-md hover:bg-[var(--color-bg-hover)] transition-colors min-h-[44px] touch-active"
           >
             Today
           </button>
           <button
             onClick={goToPreviousWeek}
-            className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded transition-colors"
+            className="p-2.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded transition-colors min-h-[44px] min-w-[44px] touch-active"
           >
             <svg
               width="16"
@@ -198,7 +202,7 @@ export default function CalendarPage() {
           </button>
           <button
             onClick={goToNextWeek}
-            className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded transition-colors"
+            className="p-2.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-hover)] rounded transition-colors min-h-[44px] min-w-[44px] touch-active"
           >
             <svg
               width="16"
@@ -226,56 +230,58 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* 주간 그리드 */}
-      <div className="grid grid-cols-7 gap-2 mb-6">
-        {weekDates.map((date, idx) => {
-          const isToday = date.toDateString() === new Date().toDateString();
-          const tasks = tasksByDate[date.toDateString()] || [];
+      {/* 주간 그리드 - 모바일에서 가로 스크롤 */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-6">
+        <div className="grid grid-cols-7 gap-2 min-w-[600px] md:min-w-0">
+          {weekDates.map((date, idx) => {
+            const isToday = date.toDateString() === new Date().toDateString();
+            const tasks = tasksByDate[date.toDateString()] || [];
 
-          return (
-            <div
-              key={idx}
-              className={`min-h-[180px] rounded-md border p-2.5 ${
-                isToday
-                  ? "bg-[var(--color-info-bg)] border-[var(--color-in-progress)]"
-                  : "bg-[var(--color-bg-primary)] border-[var(--color-border-subtle)]"
-              }`}
-            >
-              {/* 날짜 헤더 */}
-              <div className="text-center mb-2 pb-2 border-b border-[var(--color-border-subtle)]">
-                <div className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">
-                  {getDayName(date)}
-                </div>
-                <div
-                  className={`text-base font-semibold mt-0.5 ${
-                    isToday
-                      ? "text-[var(--color-in-progress)]"
-                      : "text-[var(--color-text-primary)]"
-                  }`}
-                >
-                  {date.getDate()}
-                </div>
-              </div>
-
-              {/* 이벤트 목록 */}
-              <div className="space-y-1">
-                {tasks.map((task) => (
-                  <div
-                    key={task._id}
-                    className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)}`}
-                  >
-                    <div className="font-medium truncate">{task.title}</div>
-                    {task.scheduledAt && (
-                      <div className="text-[var(--color-text-tertiary)] mt-0.5 text-[10px]">
-                        {formatTime(task.scheduledAt)}
-                      </div>
-                    )}
+            return (
+              <div
+                key={idx}
+                className={`min-h-[160px] sm:min-h-[180px] rounded-md border p-2 sm:p-2.5 ${
+                  isToday
+                    ? "bg-[var(--color-info-bg)] border-[var(--color-in-progress)]"
+                    : "bg-[var(--color-bg-primary)] border-[var(--color-border-subtle)]"
+                }`}
+              >
+                {/* 날짜 헤더 */}
+                <div className="text-center mb-2 pb-2 border-b border-[var(--color-border-subtle)]">
+                  <div className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wide">
+                    {getDayName(date)}
                   </div>
-                ))}
+                  <div
+                    className={`text-base font-semibold mt-0.5 ${
+                      isToday
+                        ? "text-[var(--color-in-progress)]"
+                        : "text-[var(--color-text-primary)]"
+                    }`}
+                  >
+                    {date.getDate()}
+                  </div>
+                </div>
+
+                {/* 이벤트 목록 */}
+                <div className="space-y-1">
+                  {tasks.map((task) => (
+                    <div
+                      key={task._id}
+                      className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)}`}
+                    >
+                      <div className="font-medium truncate">{task.title}</div>
+                      {task.scheduledAt && (
+                        <div className="text-[var(--color-text-tertiary)] mt-0.5 text-[10px]">
+                          {formatTime(task.scheduledAt)}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Next Up 섹션 */}
@@ -289,7 +295,9 @@ export default function CalendarPage() {
         </h3>
         <div className="space-y-0.5">
           {upcomingTasks.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-tertiary)] py-2">No upcoming tasks</p>
+            <p className="text-sm text-[var(--color-text-tertiary)] py-2">
+              No upcoming tasks
+            </p>
           ) : (
             upcomingTasks.map((task) => {
               const scheduledAt = task.scheduledAt;

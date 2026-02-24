@@ -2,6 +2,27 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  memories: defineTable({
+    slug: v.string(), // "MEMORY" or "2026-02-24"
+    title: v.string(),
+    date: v.string(), // ISO date string
+    content: v.string(),
+    sections: v.array(
+      v.object({
+        time: v.string(),
+        title: v.string(),
+        preview: v.string(),
+        content: v.string(),
+      })
+    ),
+    isLongTerm: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_isLongTerm", ["isLongTerm"])
+    .index("by_date", ["date"]),
+
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),

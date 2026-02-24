@@ -234,6 +234,15 @@ textarea::placeholder {
   }
 }
 
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
@@ -244,6 +253,10 @@ textarea::placeholder {
 
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out;
 }
 
 /* Utility Classes */
@@ -267,4 +280,29 @@ textarea::placeholder {
 ::selection {
   background: rgba(15, 123, 108, 0.2);
   color: var(--color-text-primary);
+}
+
+/* Touch-friendly utilities */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (hover: none) {
+  .touch-active:active {
+    background-color: var(--color-bg-hover);
+    transform: scale(0.98);
+  }
+}
+
+/* iOS safe area */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Smooth scroll for mobile */
+@media (max-width: 767px) {
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
 }
