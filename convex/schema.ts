@@ -42,6 +42,7 @@ export default defineSchema({
     isRecurring: v.optional(v.boolean()), // 반복 여부
     eventType: v.optional(v.string()), // "brief" | "reminder" | "cron"
     fullTitle: v.optional(v.string()), // cron job 전체 이름 (마우스오버용)
+    prompt: v.optional(v.string()), // cron job 프롬프트 내용
 
     tags: v.optional(v.array(v.string())),
     createdAt: v.number(),

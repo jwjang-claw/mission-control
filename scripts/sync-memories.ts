@@ -1,4 +1,3 @@
-
 import { api } from "../convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
 import * as dotenv from "dotenv";
@@ -25,8 +24,12 @@ function parseMarkdownSections(content: string): Array<{
   }> = [];
 
   // Split by ## headers
-  const lines = content.split('\n');
-  let currentSection: { title: string; content: string; startTime?: string } | null = null;
+  const lines = content.split("\n");
+  let currentSection: {
+    title: string;
+    content: string;
+    startTime?: string;
+  } | null = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -37,9 +40,11 @@ function parseMarkdownSections(content: string): Array<{
       if (currentSection) {
         const preview = currentSection.content.slice(0, 100).trim();
         sections.push({
-          time: currentSection.startTime || '',
+          time: currentSection.startTime || "",
           title: currentSection.title,
-          preview: preview + (preview.length < currentSection.content.length ? '...' : ''),
+          preview:
+            preview +
+            (preview.length < currentSection.content.length ? "..." : ""),
           content: currentSection.content.trim(),
         });
       }
@@ -47,19 +52,21 @@ function parseMarkdownSections(content: string): Array<{
       // Start new section
       const title = headerMatch[1].trim();
       // Check if title starts with a time pattern (HH:MM)
-      const timeMatch = title.match(/^(\d{1,2}:\d{2}\s*(?:AM|PM)?)\s*[-—–]\s*/i);
-      
+      const timeMatch = title.match(
+        /^(\d{1,2}:\d{2}\s*(?:AM|PM)?)\s*[-—–]\s*/i
+      );
+
       if (timeMatch) {
         currentSection = {
           startTime: timeMatch[1],
           title: title.slice(timeMatch[0].length).trim(),
-          content: '',
+          content: "",
         };
       } else {
-        currentSection = { title, content: '' };
+        currentSection = { title, content: "" };
       }
     } else if (currentSection) {
-      currentSection.content += line + '\n';
+      currentSection.content += line + "\n";
     }
   }
 
@@ -67,9 +74,10 @@ function parseMarkdownSections(content: string): Array<{
   if (currentSection) {
     const preview = currentSection.content.slice(0, 100).trim();
     sections.push({
-      time: currentSection.startTime || '',
+      time: currentSection.startTime || "",
       title: currentSection.title,
-      preview: preview + (preview.length < currentSection.content.length ? '...' : ''),
+      preview:
+        preview + (preview.length < currentSection.content.length ? "..." : ""),
       content: currentSection.content.trim(),
     });
   }
@@ -78,29 +86,29 @@ function parseMarkdownSections(content: string): Array<{
 }
 
 async function syncMemories() {
-  const workspacePath = '/home/jwjang/.openclaw/workspace';
-  const memoryDir = path.join(workspacePath, 'memory');
-  const mainMemoryPath = path.join(workspacePath, 'MEMORY.md');
+  const workspacePath = "/home/jwjang/.openclaw/workspace";
+  const memoryDir = path.join(workspacePath, "memory");
+  const mainMemoryPath = path.join(workspacePath, "MEMORY.md");
 
-  console.log('Starting memory sync...');
+  console.log("Starting memory sync...");
 
   // Sync Long-Term Memory
   try {
-    const content = await fs.readFile(mainMemoryPath, 'utf-8');
+    const content = await fs.readFile(mainMemoryPath, "utf-8");
     const sections = parseMarkdownSections(content);
     const now = Date.now();
 
     await client.mutation(api.memories.upsert, {
-      slug: 'MEMORY',
-      title: 'Long-Term Memory',
-      date: new Date(now).toISOString().split('T')[0],
+      slug: "MEMORY",
+      title: "Long-Term Memory",
+      date: new Date(now).toISOString().split("T")[0],
       content,
       sections,
       isLongTerm: true,
       createdAt: now,
       updatedAt: now,
     });
-    console.log('✅ Synced MEMORY.md (Long-Term)');
+    console.log("✅ Synced MEMORY.md (Long-Term)");
   } catch (err) {
     console.error(`❌ Failed to sync MEMORY.md: ${err}`);
   }
@@ -108,24 +116,24 @@ async function syncMemories() {
   // Sync Daily Memories
   try {
     const files = await fs.readdir(memoryDir);
-    const mdFiles = files.filter(f => f.endsWith('.md'));
+    const mdFiles = files.filter((f) => f.endsWith(".md"));
 
     for (const file of mdFiles) {
       try {
-        const content = await fs.readFile(path.join(memoryDir, file), 'utf-8');
+        const content = await fs.readFile(path.join(memoryDir, file), "utf-8");
         const sections = parseMarkdownSections(content);
-        
+
         // Extract date from filename
         const dateMatch = file.match(/^(\d{4}-\d{2}-\d{2})/);
-        const date = dateMatch ? dateMatch[1] : file.replace('.md', '');
-        
+        const date = dateMatch ? dateMatch[1] : file.replace(".md", "");
+
         // Parse date for title
         const parsedDate = new Date(date);
-        const title = parsedDate.toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
+        const title = parsedDate.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         });
 
         const slug = date;

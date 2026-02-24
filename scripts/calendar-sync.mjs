@@ -114,6 +114,11 @@ function getCronJobs() {
         ? `${job.schedule.expr} @ ${job.schedule.tz || 'UTC'}`
         : "unknown";
 
+      // 프롬프트 추출 (전체 메시지 내용)
+      const prompt = job.payload?.kind === "agentTurn" && job.payload?.message
+        ? job.payload.message.replace(/^@openclaw\s*/, "")
+        : null;
+
       jobs.push({
         id: job.id,
         name: shortName,
@@ -124,6 +129,7 @@ function getCronJobs() {
         nextRun: job.state?.nextRunAtMs || Date.now(),
         lastRun: job.state?.lastRunAtMs,
         status: job.state?.lastStatus || "ok",
+        prompt: prompt,
       });
     }
 
@@ -139,7 +145,7 @@ function getCronJobs() {
  */
 async function syncToConvex(jobs) {
   const { spawn } = await import("child_process");
-  
+
   for (const job of jobs) {
     const args = {
       cronId: job.id,
@@ -150,6 +156,11 @@ async function syncToConvex(jobs) {
       lastRun: job.lastRun,
       status: job.status,
     };
+
+    // prompt가 있으면 추가 (null/undefined인 경우 제외)
+    if (job.prompt != null) {
+      args.prompt = job.prompt;
+    }
 
     try {
       // spawn을 사용하여 인자를 배열로 전달 (쉘 인자 분리 문제 해결)
@@ -204,6 +215,7 @@ async function main() {
     nextRun: Date.now() + 30 * 60 * 1000,
     lastRun: undefined,
     status: "ok",
+    prompt: null,
   });
 
   console.log("📤 Syncing to Convex...");

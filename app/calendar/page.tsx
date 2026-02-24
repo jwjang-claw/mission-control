@@ -3,8 +3,10 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useState, useMemo } from "react";
 import { cronToHumanReadable } from "@/lib/cron";
+import { CronDetailModal } from "@/components/CronDetailModal";
 
 // 주간 날짜 계산
 function getWeekDates(date: Date): Date[] {
@@ -77,15 +79,20 @@ function NextUpItem({
 // Recurring Task 아이템
 function RecurringTaskItem({
   task,
+  onClick,
 }: {
-  task: { _id: string; title: string; fullTitle?: string; recurrence?: string };
+  task: Doc<"tasks">;
+  onClick: (task: Doc<"tasks">) => void;
 }) {
   return (
-    <div 
-      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors cursor-default"
+    <div
+      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
       title={task.fullTitle || task.title}
+      onClick={() => onClick(task)}
     >
-      <span className="text-[var(--color-text-primary)] truncate max-w-[60%]">{task.title}</span>
+      <span className="text-[var(--color-text-primary)] truncate max-w-[60%]">
+        {task.title}
+      </span>
       <span className="text-[var(--color-text-tertiary)] text-xs shrink-0">
         {task.recurrence ? cronToHumanReadable(task.recurrence) : "Recurring"}
       </span>
@@ -95,6 +102,11 @@ function RecurringTaskItem({
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedTask, setSelectedTask] = useState<
+    (typeof scheduledTasks)[number] | null
+  >(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
 
   // 주간 범위 계산
@@ -154,6 +166,18 @@ export default function CalendarPage() {
     setCurrentDate(newDate);
   };
 
+  // 크론 잡 클릭 핸들러
+  const handleTaskClick = (task: (typeof recurringTasks)[number]) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
+  };
+
   return (
     <MainLayout title="Scheduled Tasks" subtitle="Kuro's automated routines">
       {/* Always Running 섹션 - 상단 */}
@@ -173,7 +197,11 @@ export default function CalendarPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               {recurringTasks.map((task) => (
-                <RecurringTaskItem key={task._id} task={task} />
+                <RecurringTaskItem
+                  key={task._id}
+                  task={task}
+                  onClick={handleTaskClick}
+                />
               ))}
             </div>
           )}
@@ -271,8 +299,9 @@ export default function CalendarPage() {
                   {tasks.map((task) => (
                     <div
                       key={task._id}
-                      className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)}`}
+                      className={`text-xs p-1.5 rounded border-l-2 ${getEventColor(task.eventType)} cursor-pointer hover:opacity-80 transition-opacity`}
                       title={task.fullTitle || task.title}
+                      onClick={() => handleTaskClick(task)}
                     >
                       <div className="font-medium truncate">{task.title}</div>
                       {task.scheduledAt && (
@@ -319,6 +348,11 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      {/* Cron Detail Modal */}
+      {isModalOpen && selectedTask && (
+        <CronDetailModal task={selectedTask} onClose={handleCloseModal} />
+      )}
     </MainLayout>
   );
 }

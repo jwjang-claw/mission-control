@@ -8,7 +8,8 @@ const teamMembers = [
     id: "kuro",
     name: "Kuro",
     role: "Chief of Staff",
-    description: "Main agent, manager role — orchestrates tasks and communication",
+    description:
+      "Main agent, manager role — orchestrates tasks and communication",
     avatar: "🦊",
     tags: ["Planning", "Task Management", "Communication"],
   },
@@ -38,7 +39,7 @@ const teamMembers = [
   },
 ];
 
-function TeamMemberCard({ member }: { member: typeof teamMembers[0] }) {
+function TeamMemberCard({ member }: { member: (typeof teamMembers)[0] }) {
   return (
     <div className="bg-white rounded-xl border border-[var(--color-border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-[var(--color-border-default)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-150 p-6">
       <div className="flex items-start gap-4">

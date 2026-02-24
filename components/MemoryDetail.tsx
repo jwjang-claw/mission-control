@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { MemoryEntry } from "@/lib/memory";
 
 interface MemoryDetailProps {
   slug: string | null;
@@ -156,7 +155,6 @@ export function MemoryDetail({
   onSelectPrev,
 }: MemoryDetailProps) {
   const memory = useQuery(api.memories.getBySlug, slug ? { slug } : "skip");
-  const seedMemories = useMutation(api.memories.seed);
 
   // Loading state
   if (slug && memory === undefined) {
