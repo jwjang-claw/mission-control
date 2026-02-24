@@ -190,9 +190,7 @@ export function CronDetailModal({ task, onClose }: CronDetailModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <InfoCard
               label="Schedule"
-              value={
-                task.description ? cronToHumanReadable(task.description) : "-"
-              }
+              value={formatRecurrence(task.description || task.recurrence)}
               icon={
                 <svg
                   className="w-4 h-4"
