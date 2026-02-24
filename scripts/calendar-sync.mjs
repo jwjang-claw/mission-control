@@ -20,10 +20,24 @@ const projectRoot = join(__dirname, "..");
 const CONVEX_DIR = projectRoot;
 
 /**
+ * 잡 이름 파싱 - @openclaw 접두사 제거 및 말줄임표 처리
+ *
+ * @param {string} rawName - 원본 잡 이름
+ * @returns {string} 파싱된 잡 이름
+ */
+function parseJobName(rawName) {
+  // @openclaw 접두사 제거
+  let name = rawName.replace(/^@openclaw\s*/, "");
+  // 말줄임표 제거
+  name = name.replace(/\.\.\.+$/, "").trim();
+  return name || rawName;
+}
+
+/**
  * OpenClaw cron list 실행 및 파싱
- * 
+ *
  * 출력 형식:
- * ID                                   Name                     Schedule                         Next       Last       Status    Target    Agent     
+ * ID                                   Name                     Schedule                         Next       Last       Status    Target    Agent
  * 40713dc7-bf98-4e6a-a02e-67eb23614ed5 @openclaw This is a s... cron 0 9 * * * @ Asia/Seoul (... in 21h     3h ago     ok        isolated  main
  */
 function getCronJobs() {
@@ -52,7 +66,8 @@ function getCronJobs() {
       const cronIdx = rest.indexOf("cron ");
       if (cronIdx === -1) continue;
 
-      const name = rest.slice(0, cronIdx).trim();
+      const rawName = rest.slice(0, cronIdx).trim();
+      const name = parseJobName(rawName);
       const afterCron = rest.slice(cronIdx + 5); // "cron " 이후
 
       // schedule은 괄호까지 포함: "0 9 * * * @ Asia/Seoul (expr: "0 9 * * *")"

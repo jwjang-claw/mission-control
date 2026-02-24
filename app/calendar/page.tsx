@@ -4,6 +4,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useMemo } from "react";
+import { cronToHumanReadable } from "@/lib/cron";
 
 // 주간 날짜 계산
 function getWeekDates(date: Date): Date[] {
@@ -83,7 +84,7 @@ function RecurringTaskItem({
     <div className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-[var(--color-bg-hover)] transition-colors">
       <span className="text-[var(--color-text-primary)]">{task.title}</span>
       <span className="text-[var(--color-text-tertiary)] text-xs">
-        {task.recurrence || "Recurring"}
+        {task.recurrence ? cronToHumanReadable(task.recurrence) : "Recurring"}
       </span>
     </div>
   );
