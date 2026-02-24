@@ -47,8 +47,13 @@ function getCronTimeForDate(
   if (parts.length >= 2) {
     const [min, hour] = parts;
     const d = new Date(date);
-    d.setHours(parseInt(hour), parseInt(min), 0, 0);
-    return d.getTime();
+    const hourNum = hour === "*" ? 0 : parseInt(hour.replace(/[^\d]/g, ""));
+    const minNum = min === "*" ? 0 : parseInt(min.replace(/[^\d]/g, ""));
+    // NaN가 아니면 설정, 아니면 0시 0분 사용
+    if (!isNaN(hourNum) && !isNaN(minNum)) {
+      d.setHours(hourNum, minNum, 0, 0);
+      return d.getTime();
+    }
   }
   return date.getTime();
 }
@@ -156,6 +161,10 @@ export default function CalendarPage() {
     // 분 시간 일 월 요일 -> 5부
     if (parts.length !== 5) return false;
     const [min, hour, day, month, weekday] = parts;
+    // 간격 표현(*/30)이 포함되면 일간으로 간주하지 않음
+    if (min.includes("/") || hour.includes("/")) return false;
+    // 시간에 *가 포함되면 일간으로 간주하지 않음 (매시간 실행 등)
+    if (hour === "*") return false;
     // 일(*), 월(*), 요일(*)이면 일간
     return day === "*" && month === "*" && weekday === "*";
   };
