@@ -96,6 +96,13 @@ export const create = mutation({
     projectId: v.optional(v.string()),
     milestone: v.optional(v.string()),
     strategyNote: v.optional(v.string()),
+    // Calendar/Scheduled Task 필드
+    scheduledAt: v.optional(v.number()),
+    recurrence: v.optional(v.string()),
+    isRecurring: v.optional(v.boolean()),
+    eventType: v.optional(v.string()),
+    fullTitle: v.optional(v.string()),
+    prompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -110,6 +117,12 @@ export const create = mutation({
       projectId: args.projectId,
       milestone: args.milestone,
       strategyNote: args.strategyNote,
+      scheduledAt: args.scheduledAt,
+      recurrence: args.recurrence,
+      isRecurring: args.isRecurring,
+      eventType: args.eventType,
+      fullTitle: args.fullTitle,
+      prompt: args.prompt,
       createdAt: now,
       updatedAt: now,
     });
@@ -131,6 +144,13 @@ export const update = mutation({
     projectId: v.optional(v.string()),
     milestone: v.optional(v.string()),
     strategyNote: v.optional(v.string()),
+    // Calendar/Scheduled Task 필드
+    scheduledAt: v.optional(v.number()),
+    recurrence: v.optional(v.string()),
+    isRecurring: v.optional(v.boolean()),
+    eventType: v.optional(v.string()),
+    fullTitle: v.optional(v.string()),
+    prompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

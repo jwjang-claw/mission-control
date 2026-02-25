@@ -58,7 +58,8 @@ export const TaskDetailModal = ({
   if (!isOpen || !task) return null;
 
   const assigneeStyle = ASSIGNEE_CONFIG[task.assignee] || ASSIGNEE_CONFIG.Kuro;
-  const statusColor = STATUS_COLORS[task.status] || "var(--color-text-tertiary)";
+  const statusColor =
+    STATUS_COLORS[task.status] || "var(--color-text-tertiary)";
   const statusLabel = STATUS_LABELS[task.status] || task.status;
 
   const formatDate = (timestamp: number) => {
@@ -94,7 +95,10 @@ export const TaskDetailModal = ({
               )}
               <span
                 className="text-[11px] px-2 py-0.5 rounded font-semibold"
-                style={{ color: statusColor, backgroundColor: `${statusColor}15` }}
+                style={{
+                  color: statusColor,
+                  backgroundColor: `${statusColor}15`,
+                }}
               >
                 {statusLabel}
               </span>
@@ -191,7 +195,10 @@ export const TaskDetailModal = ({
                 <span className="text-[11px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
                   Milestone
                 </span>
-                <p className="text-[14px] font-medium mt-1.5" style={{ color: statusColor }}>
+                <p
+                  className="text-[14px] font-medium mt-1.5"
+                  style={{ color: statusColor }}
+                >
                   {task.milestone}
                 </p>
               </div>
