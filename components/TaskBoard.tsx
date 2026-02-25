@@ -4,10 +4,12 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { FormEvent, useState } from "react";
+import { TaskDetailModal } from "./task-board/TaskDetailModal";
 
 type Task = {
   _id: Id<"tasks">;
   title: string;
+  description?: string;
   assignee: string;
   status: string;
   updatedAt: number;
@@ -75,6 +77,7 @@ export default function TaskBoard() {
   const deleteTask = useMutation(api.tasks.remove);
 
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // 프로젝트 필터링
   const filteredTasks =
@@ -152,10 +155,18 @@ export default function TaskBoard() {
               tasks={colTasks}
               onDelete={handleDelete}
               onCreateTask={handleCreateTask}
+              onTaskClick={setSelectedTask}
             />
           );
         })}
       </div>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        isOpen={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
+        task={selectedTask}
+      />
     </div>
   );
 }
@@ -165,11 +176,13 @@ function Column({
   tasks,
   onDelete,
   onCreateTask,
+  onTaskClick,
 }: {
   column: (typeof COLUMNS)[number];
   tasks: Task[];
   onDelete: (id: Id<"tasks">) => Promise<void>;
   onCreateTask: (title: string, status: string) => Promise<void>;
+  onTaskClick: (task: Task) => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -228,7 +241,12 @@ function Column({
       {/* Task List */}
       <div className="space-y-3">
         {tasks.map((task) => (
-          <TaskCard key={task._id} task={task} onDelete={onDelete} />
+          <TaskCard
+            key={task._id}
+            task={task}
+            onDelete={onDelete}
+            onTaskClick={onTaskClick}
+          />
         ))}
 
         {/* Empty state */}
@@ -280,12 +298,12 @@ function Column({
 function TaskCard({
   task,
   onDelete,
+  onTaskClick,
 }: {
   task: Task;
   onDelete: (id: Id<"tasks">) => Promise<void>;
+  onTaskClick: (task: Task) => void;
 }) {
-  const [showMenu, setShowMenu] = useState(false);
-
   const assigneeColors: Record<
     string,
     { bg: string; text: string; initial: string }
@@ -299,7 +317,7 @@ function TaskCard({
   return (
     <div
       className="group relative bg-white rounded-xl border border-[var(--color-border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-[var(--color-border-default)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-150 p-6 cursor-pointer"
-      onClick={() => setShowMenu(!showMenu)}
+      onClick={() => onTaskClick(task)}
     >
       <div className="flex flex-col gap-4">
         {/* 티켓 ID와 마일스톤 */}
@@ -363,49 +381,6 @@ function TaskCard({
           </div>
         </div>
       </div>
-
-      {showMenu && (
-        <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] space-y-3">
-          {/* 전략 메모 */}
-          {task.strategyNote && (
-            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
-              {task.strategyNote}
-            </p>
-          )}
-
-          {/* 메타 정보 */}
-          <div className="flex flex-col gap-1.5">
-            {task.projectId && (
-              <div className="flex items-center gap-2 text-[12px]">
-                <span className="text-[var(--color-text-tertiary)] w-16">
-                  Project
-                </span>
-                <span className="font-medium text-[var(--color-text-primary)] capitalize">
-                  {task.projectId}
-                </span>
-              </div>
-            )}
-            {task.milestone && (
-              <div className="flex items-center gap-2 text-[12px]">
-                <span className="text-[var(--color-text-tertiary)] w-16">
-                  Milestone
-                </span>
-                <span className="font-medium text-[var(--color-in-progress)]">
-                  {task.milestone}
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-[12px]">
-              <span className="text-[var(--color-text-tertiary)] w-16">
-                Assignee
-              </span>
-              <span className="font-medium text-[var(--color-text-primary)]">
-                {task.assignee}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
